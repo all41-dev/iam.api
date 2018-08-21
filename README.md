@@ -25,4 +25,4 @@ Run the following command to init tsconfig.json file:
 
     npm run tsc -- --init
 
-copy index.ts and routes.ts from this folder.
+copy index.ts and users-api.ts from this folder.
