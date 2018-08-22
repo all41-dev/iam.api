@@ -11,9 +11,9 @@ const router: Router = Router();
  * @param {string} filter - filter string
  */
 router.get('/', (req: Request, res: Response) => {
-    const page = req.query.page;
-    const size = req.query.pageSize;
-    const filter = req.query.filter;
+    const page: number | undefined = req.query.page;
+    const size: number | undefined = req.query.pageSize;
+    const filter: string | undefined = req.query.filter;
 
     const options: any = page !== undefined && size !== undefined ?
         // if both page & size are set, then apply pagination
