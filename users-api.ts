@@ -7,11 +7,13 @@ export * from "./controllers/users.controller";
 /** Hosts route definitions and sequelize model initialization */
 export class UsersApi {
     public static model: any;
+    public static sequelize: Sequelize.Sequelize;
 
     public static registerRoutes = (app: express.Application) => {
         app.use("/api/users", UsersController);
     }
     public static registerModel: any = (sequelize: Sequelize.Sequelize, ) => {
+        UsersApi.sequelize = sequelize;
         return UsersApi.model = {
             sample : sequelize.define("sample", {
                 Name: {
