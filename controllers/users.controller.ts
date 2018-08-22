@@ -3,11 +3,25 @@ import {UsersApi} from "../users-api";
 
 const router: Router = Router();
 
+/**
+ * Returns all users, if page or size are missing, returns all records
+ * @param page
+ * @param size
+ */
 router.get('/', (req: Request, res: Response) => {
-    // Reply with a hello world when no name param is provided
-    UsersApi.model.user.all().then((users: any) => {
+    const page = req.query.page;
+    const size = req.query.pageSize;
+
+    const options = page !== undefined && size !== undefined ?
+        // if both page & size are set, then apply pagination
+        { offset : (page - 1) * size, limit : +size } :
+        // no pagination
+        {};
+
+    UsersApi.model.user.all(options).then((users: any) => {
         res.send(users);
     });
+
 });
 router.get('/?filter=:filter', (req: Request, res: Response) => {
     // Receives a filter string
