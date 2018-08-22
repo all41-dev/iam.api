@@ -32,13 +32,19 @@ router.get('/', (req: Request, res: Response) => {
     });
 
 });
+
+/**
+ * @summary validates user credentials
+ * Make the hash from the user provided password and stored salt
+ * Compare with stored hash
+ * Returns true or false
+ * NOTE: This method is to be consumed exclusively from the oauth microservice
+ * @param email
+ * @param password
+ * @description
+ */
 router.post('/authenticate', (req: Request, res: Response) => {
-    // Receives the user email and password
-    // Retrieves the user record
-    // Make the hash from the user provided password and stored salt
-    // Compare with stored hash
-    // Returns true or false
-    // NOTE: This method is to be consumed exclusively from the oauth microservice
+    // to be implemented when oauth microservice will require this function
 });
 router.put('/change-password', (req: Request, res: Response) => {
     // Receives a change password token ( covers new user and lost password scenarios)
