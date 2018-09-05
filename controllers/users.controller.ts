@@ -1,6 +1,7 @@
 import { Router, Request, Response } from "express";
 import {UsersApi} from "../users-api";
 import {Sequelize} from "sequelize";
+import {DbUser} from "../models/db/user";
 
 const router: Router = Router();
 
@@ -46,17 +47,42 @@ router.get('/', (req: Request, res: Response) => {
 router.post('/authenticate', (req: Request, res: Response) => {
     // to be implemented when oauth microservice will require this function
 });
+
 router.put('/change-password', (req: Request, res: Response) => {
     // Receives a change password token ( covers new user and lost password scenarios)
     // Receives a new password string
     // Try to retrieve the token from db
     // If exists and valid, invoke the save password process
 });
+
+/**
+ * @summary Creates a user entry
+ * Receives email address
+ * Validates correctness and uniqueness of the email
+ * Saves new user in db
+ * Invoke the change password token process
+ * @param email
+ */
 router.post('/', (req: Request, res: Response) => {
-    // Receives email address
-    // Validates correctness and uniqueness of the email
-    // Saves new user in db
-    // Invoke the change password token process
+    const email: string =  req.body.email.toLowerCase();
+
+    if (!emailIsValid(email)) {
+        res.statusCode = 400;
+        res.send({message: `The email address ${email} is not valid. Creation has been canceled`})
+        return;
+    }
+    if (userExists(email)){
+        res.statusCode = 409;
+        res.send({message: `The user ${email} already exists. Creation has been canceled.`})
+        return;
+    }
+
+    // Email is valid and doesn't exists yet
+    UsersApi.model.user.create({Email: email})
+        .then( (user: DbUser) => {
+            createSetPasswordToken(user);
+            res.send(user);
+        });
 });
 router.post('/lost-password/:email', (req: Request, res: Response) => {
     // Receives email address
@@ -71,13 +97,34 @@ router.post('/lost-password/:email', (req: Request, res: Response) => {
 // Generate hash value from provided password and generated salt
 // create or update user entry with salt and hash
 
-// Create change password token
-// Considers that permission to create the token has been checked already
-// Verify existing token for the user
-// if exists then update validity
-// if not exists create (generate token value and store)
-// Send an email to the user with the token value
-// Wording of the email will change whether the token is for a new user or a lost password
+const emailIsValid = (email: string) => {
+    const re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+    return re.test(email);
+};
+
+//const userExists = (email: string) => {
+function* userExists(email: string) {
+    const options: any = {where: {
+        email: email
+    }};
+
+    const res = yield UsersApi.model.user.find(options);
+    return res.length > 0;
+}
+
+/** @summary Creates a change password token
+ * Considers that permission to create the token has been checked already
+ * Verify existing token for the user
+ * if exists then update validity
+ * if not exists create (generate token value and store)
+ * Send an email to the user with the token value
+ * Wording of the email will change whether the token is for a new user or a lost password
+ */
+const createSetPasswordToken = (user: DbUser) => {
+
+};
+
+
 
 console.log("registring example routes");
 export const UsersController: Router = router;
