@@ -1,4 +1,5 @@
 import { Router, Request, Response } from "express";
+import * as crypto from "crypto"
 import {UsersApi} from "../users-api";
 import {Sequelize} from "sequelize";
 import {DbUser} from "../models/db/user";
@@ -80,14 +81,35 @@ router.post('/', (req: Request, res: Response) => {
     // Email is valid and doesn't exists yet
     UsersApi.model.user.create({Email: email})
         .then( (user: DbUser) => {
-            createSetPasswordToken(user);
+            createSetPasswordToken(user, 'create user message -> tbd');
             res.send(user);
         });
 });
+
+/**
+ *  @summary Sends a lost password token if email exists
+ *  Verify that email exists in db
+ *  if yes invoke the change password token process
+ *  @param email
+ */
 router.post('/lost-password/:email', (req: Request, res: Response) => {
-    // Receives email address
-    // Verify that email exists in db
-    // if yes invoke the change password token process
+    const email: string =  req.body.email.toLowerCase();
+
+    if (!emailIsValid(email)) {
+        res.statusCode = 400;
+        res.send({message: `The email address ${email} is not valid. The request has been canceled`});
+        return;
+    }
+    if (!userExists(email)){
+        res.statusCode = 409;
+        res.send({message: `The user ${email} already exists. The request has been canceled.`});
+        return;
+    }
+
+    const user = UsersApi.model.user.find({where: {
+            email: email
+        }});
+    createSetPasswordToken(user, 'lost password message -> tbd');
 });
 
 // Save password (private function)
@@ -120,8 +142,42 @@ function* userExists(email: string) {
  * Send an email to the user with the token value
  * Wording of the email will change whether the token is for a new user or a lost password
  */
-const createSetPasswordToken = (user: DbUser) => {
+const createSetPasswordToken = (user: DbUser, message: string) => {
+    DbSetPasswordToken.findAll({ where: {expires: { [Sequelize.Op.lt]: new Date()} }})
+        .then((spts: DbSetPasswordToken[]) => {
+        // delete expired tokens for all users
+         for (let spt of spts){
+             spt.destroy();
+         }
+    });
+    const tokenDurationSec = 3600 * 24; //1 day
+    let token : DbSetPasswordToken;
+    //if(user.setPasswordTokens === undefined){
+    //    user.setPasswordTokens = [];
+    //}
 
+    DbSetPasswordToken.findAll({where: { idUser: user.id}}).then(spt => {
+        if(spt !== null && spt !== undefined) {
+
+        //if(user.setPasswordTokens.length > 0) {
+        //    token = user.setPasswordTokens[0];
+        } else
+        {
+            token = new DbSetPasswordToken({
+                tokenHash: crypto.randomBytes(64).toString('hex'),
+                idUser: user.id
+            });
+            // user.$add('setPasswordTokens', token);
+        }
+
+        const dt = new Date();
+        dt.setSeconds(dt.getSeconds() + tokenDurationSec);
+        token.expires = dt;
+        token.message = message;
+        token.save().then(t => {
+            // send email to user
+        });
+    })
 };
 
 
