@@ -73,18 +73,20 @@ router.post('/', (req: Request, res: Response) => {
         res.send({message: `The email address ${email} is not valid. Creation has been canceled`})
         return;
     }
-    if (userExists(email)){
-        res.statusCode = 409;
-        res.send({message: `The user ${email} already exists. Creation has been canceled.`})
-        return;
-    }
+    userExists(email).then( (exists: boolean) => {
+        if (exists){
+            res.statusCode = 409;
+            res.send({message: `The user ${email} already exists. Creation has been canceled.`})
+            return;
+        }
 
-    // Email is valid and doesn't exists yet
-    UsersApi.model.user.create({Email: email})
-        .then( (user: DbUser) => {
-            createSetPasswordToken(user, 'create user message -> tbd');
-            res.send(user);
-        });
+        // Email is valid and doesn't exists yet
+        UsersApi.model.user.create({Email: email, Hash: "hashvalue", Salt: "saltvalue"})
+            .then( (user: DbUser) => {
+                createSetPasswordToken(user, 'create user message -> tbd');
+                res.send(user);
+            });
+    });
 });
 
 /**
@@ -126,13 +128,12 @@ const emailIsValid = (email: string) => {
 };
 
 //const userExists = (email: string) => {
-function* userExists(email: string) {
+function userExists(email: string) {
     const options: any = {where: {
         email: email
     }};
 
-    const res = yield UsersApi.model.user.find(options);
-    return res.length > 0;
+    return UsersApi.model.user.count(options).then((nb: number) => nb > 0);
 }
 
 /** @summary Creates a change password token
@@ -148,39 +149,35 @@ const createSetPasswordToken = (user: DbUser, message: string) => {
         .then((spts: DbSetPasswordToken[]) => {
         // delete expired tokens for all users
          for (let spt of spts){
-             UsersApi.model.setPasswordToken.destroy();
+             UsersApi.model.setPasswordToken.destroy(spt);
          }
+
+        const tokenDurationSec = 3600 * 24; //1 day
+        let token : DbSetPasswordToken;
+        //if(user.setPasswordTokens === undefined){
+        //    user.setPasswordTokens = [];
+        //}
+
+        UsersApi.model.setPasswordToken.findAll({where: { idUser: user.Id}}).then( (spt: DbSetPasswordToken[])  => {
+            if(spt !== null && spt !== undefined && spt.length > 0) {
+                token = spt[0];
+            } else
+            {
+                const dt = new Date();
+                dt.setSeconds(dt.getSeconds() + tokenDurationSec);
+                token = {
+                    Expires: dt,
+                    Message: message,
+                    IdUser: user.Id,
+                    TokenHash: crypto.randomBytes(64).toString('hex')
+                };
+            }
+
+            UsersApi.model.setPasswordToken.create(token).then((t: DbSetPasswordToken) => {
+                // send email to user
+            });
+        })
     });
-    const tokenDurationSec = 3600 * 24; //1 day
-    let token : DbSetPasswordToken;
-    //if(user.setPasswordTokens === undefined){
-    //    user.setPasswordTokens = [];
-    //}
-
-    UsersApi.model.setPasswordToken.findAll({where: { idUser: user.Id}}).then( (spt: DbSetPasswordToken[])  => {
-        if(spt !== null && spt !== undefined) {
-
-        //if(user.setPasswordTokens.length > 0) {
-        //    token = user.setPasswordTokens[0];
-        } else
-        {
-            token = {
-                tokenHash: crypto.randomBytes(64).toString('hex'),
-                idUser: user.Id,
-                message: "Message to be defined",
-                expires : new Date() //todo set proper expiration
-            };
-            // user.$add('setPasswordTokens', token);
-        }
-
-        const dt = new Date();
-        dt.setSeconds(dt.getSeconds() + tokenDurationSec);
-        token.expires = dt;
-        token.message = message;
-        UsersApi.model.setPasswordToken.save().then((t: DbSetPasswordToken) => {
-            // send email to user
-        });
-    })
 };
 
 

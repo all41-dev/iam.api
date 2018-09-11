@@ -2,13 +2,13 @@ export class DbSetPasswordToken {
     //public Id: number | undefined;
 
     //@ForeignKey(() => DbUser)
-    public idUser!: number;
+    public IdUser!: number;
 
-    public message!: string;
+    public Message!: string;
 
-    public expires!: Date;
+    public Expires!: Date;
 
-    public tokenHash!: string;
+    public TokenHash!: string;
 
     //@BelongsTo(() => DbUser)
     //public user!: DbUser;

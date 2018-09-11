@@ -22,18 +22,22 @@ export class UsersApi {
                 },
             }),
             user : sequelize.define("user", {
-                Id : { type: Sequelize.INTEGER, },
+                Id : { type: Sequelize.INTEGER, autoIncrement: true, primaryKey: true },
                 Email : { type: Sequelize.STRING, },
                 Hash : { type: Sequelize.STRING, },
                 Salt : { type: Sequelize.STRING, }
             }, {
-                tableName: "Users"
+                tableName: "Users",
+
             }),
             setPasswordToken : sequelize.define("setPasswordToken", {
-                Id : { type: Sequelize.INTEGER, },
+                Id : { type: Sequelize.INTEGER, autoIncrement: true, primaryKey: true},
                 IdUser : { type: Sequelize.INTEGER, },
                 Message : { type: Sequelize.STRING, },
                 Expires : { type: Sequelize.STRING, },// todo refactor type
+                TokenHash: { type: Sequelize.STRING, }
+            }, {
+                tableName: "SetPasswordTokens"
             })
         };
         UsersApi.model.user.hasMany(UsersApi.model.setPasswordToken, {
