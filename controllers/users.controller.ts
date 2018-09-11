@@ -1,8 +1,9 @@
 import { Router, Request, Response } from "express";
 import * as crypto from "crypto"
 import {UsersApi} from "../users-api";
-import {Sequelize} from "sequelize";
+import * as Sequelize from "sequelize";
 import {DbUser} from "../models/db/user";
+import {DbSetPasswordToken} from "../models/db/setPasswordToken";
 
 const router: Router = Router();
 
@@ -143,11 +144,11 @@ function* userExists(email: string) {
  * Wording of the email will change whether the token is for a new user or a lost password
  */
 const createSetPasswordToken = (user: DbUser, message: string) => {
-    DbSetPasswordToken.findAll({ where: {expires: { [Sequelize.Op.lt]: new Date()} }})
+    UsersApi.model.setPasswordToken.findAll({ where: {expires: { [Sequelize.Op.lt]: new Date()} }})
         .then((spts: DbSetPasswordToken[]) => {
         // delete expired tokens for all users
          for (let spt of spts){
-             spt.destroy();
+             UsersApi.model.setPasswordToken.destroy();
          }
     });
     const tokenDurationSec = 3600 * 24; //1 day
@@ -156,17 +157,19 @@ const createSetPasswordToken = (user: DbUser, message: string) => {
     //    user.setPasswordTokens = [];
     //}
 
-    DbSetPasswordToken.findAll({where: { idUser: user.id}}).then(spt => {
+    UsersApi.model.setPasswordToken.findAll({where: { idUser: user.Id}}).then( (spt: DbSetPasswordToken[])  => {
         if(spt !== null && spt !== undefined) {
 
         //if(user.setPasswordTokens.length > 0) {
         //    token = user.setPasswordTokens[0];
         } else
         {
-            token = new DbSetPasswordToken({
+            token = {
                 tokenHash: crypto.randomBytes(64).toString('hex'),
-                idUser: user.id
-            });
+                idUser: user.Id,
+                message: "Message to be defined",
+                expires : new Date() //todo set proper expiration
+            };
             // user.$add('setPasswordTokens', token);
         }
 
@@ -174,7 +177,7 @@ const createSetPasswordToken = (user: DbUser, message: string) => {
         dt.setSeconds(dt.getSeconds() + tokenDurationSec);
         token.expires = dt;
         token.message = message;
-        token.save().then(t => {
+        UsersApi.model.setPasswordToken.save().then((t: DbSetPasswordToken) => {
             // send email to user
         });
     })

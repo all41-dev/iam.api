@@ -1,5 +1,5 @@
 import express from "express";
-import Sequelize from "sequelize";
+import * as Sequelize from "sequelize";
 import {UsersController} from "./controllers/users.controller";
 
 export * from "./controllers/users.controller";
@@ -14,7 +14,8 @@ export class UsersApi {
     }
     public static registerModel: any = (sequelize: Sequelize.Sequelize, ) => {
         UsersApi.sequelize = sequelize;
-        return UsersApi.model = {
+
+        UsersApi.model = {
             sample : sequelize.define("sample", {
                 Name: {
                     type: Sequelize.STRING,
@@ -27,7 +28,21 @@ export class UsersApi {
                 Salt : { type: Sequelize.STRING, }
             }, {
                 tableName: "Users"
+            }),
+            setPasswordToken : sequelize.define("setPasswordToken", {
+                Id : { type: Sequelize.INTEGER, },
+                IdUser : { type: Sequelize.INTEGER, },
+                Message : { type: Sequelize.STRING, },
+                Expires : { type: Sequelize.STRING, },// todo refactor type
             })
         };
+        UsersApi.model.user.hasMany(UsersApi.model.setPasswordToken, {
+            foreignKey: 'IdUser'
+        });
+        UsersApi.model.setPasswordToken.belongsTo(UsersApi.model.user, {
+            foreignKey: 'IdUser'
+        });
+
+        return UsersApi.model;
     }
 }
