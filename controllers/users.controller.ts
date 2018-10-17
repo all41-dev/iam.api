@@ -4,6 +4,8 @@ import {UsersApi} from "../users-api";
 import * as Sequelize from "sequelize";
 import {DbUser} from "../models/db/user";
 import {DbSetPasswordToken} from "../models/db/setPasswordToken";
+import {FindOptions} from "sequelize";
+import {EntityUser} from "../models/db/entity-user";
 
 const router: Router = Router();
 
@@ -14,27 +16,32 @@ const router: Router = Router();
  * @param {string} filter - filter string
  */
 router.get('/', (req: Request, res: Response) => {
-    const page: number | undefined = req.query.page;
-    const size: number | undefined = req.query.pageSize;
-    const filter: string | undefined = req.query.filter;
+    const options: FindOptions<DbUser> = {};
+    const entity = new EntityUser();
 
-    const options: any = page !== undefined && size !== undefined ?
-        // if both page & size are set, then apply pagination
-        { offset : (page - 1) * size, limit : +size } :
-        // no pagination
-        {};
+    entity.setPagination(req, options);
+    entity.setFilter(req, options);
 
-    if (filter !== undefined) {
-        options.where = {
-            email: {[UsersApi.sequelize.Op.like]: `%${filter}%`}
-        }
-    }
-
-    UsersApi.model.user.all(options).then((users: any) => {
-        res.send(users);
-    });
-
+    entity.doGet(UsersApi.inst.sequelize.models.user, options, res);
 });
+
+router.get('/:id', (req: Request, res: Response): void => {
+    const options: FindOptions<DbUser> = {};
+    const entity = new EntityUser();
+
+    entity.setPagination(req, options);
+
+    const userId = Number(req.params.id);
+    if(isNaN(userId)){
+        throw new Error(`User id must be a number, received value is: ${req.params.id}`);
+    }
+    options.where = {
+        Id: userId
+    };
+
+    entity.doGet(UsersApi.inst.sequelize.models.user, options, res);
+});
+
 
 /**
  * @summary validates user credentials
@@ -70,18 +77,18 @@ router.post('/', (req: Request, res: Response) => {
 
     if (!emailIsValid(email)) {
         res.statusCode = 400;
-        res.send({message: `The email address ${email} is not valid. Creation has been canceled`})
+        res.send({message: `The email address ${email} is not valid. Creation has been canceled`});
         return;
     }
     userExists(email).then( (exists: boolean) => {
         if (exists){
             res.statusCode = 409;
-            res.send({message: `The user ${email} already exists. Creation has been canceled.`})
+            res.send({message: `The user ${email} already exists. Creation has been canceled.`});
             return;
         }
 
         // Email is valid and doesn't exists yet
-        UsersApi.model.user.create({Email: email, Hash: "hashvalue", Salt: "saltvalue"})
+        UsersApi.inst.sequelize.models.user.create({Email: email, Hash: "hashvalue", Salt: "saltvalue"})
             .then( (user: DbUser) => {
                 createSetPasswordToken(user, 'create user message -> tbd');
                 res.send(user);
@@ -109,10 +116,11 @@ router.post('/lost-password/:email', (req: Request, res: Response) => {
         return;
     }
 
-    const user = UsersApi.model.user.find({where: {
+    UsersApi.inst.sequelize.models.user.find({where: {
             email: email
-        }});
-    createSetPasswordToken(user, 'lost password message -> tbd');
+        }}).then((user: DbUser[]) => {
+        createSetPasswordToken(user[0], 'lost password message -> tbd');
+    });
 });
 
 // Save password (private function)
@@ -133,7 +141,7 @@ function userExists(email: string) {
         email: email
     }};
 
-    return UsersApi.model.user.count(options).then((nb: number) => nb > 0);
+    return UsersApi.inst.sequelize.models.user.count(options).then((nb: number) => nb > 0);
 }
 
 /** @summary Creates a change password token
@@ -145,11 +153,11 @@ function userExists(email: string) {
  * Wording of the email will change whether the token is for a new user or a lost password
  */
 const createSetPasswordToken = (user: DbUser, message: string) => {
-    UsersApi.model.setPasswordToken.findAll({ where: {expires: { [Sequelize.Op.lt]: new Date()} }})
-        .then((spts: DbSetPasswordToken[]) => {
+    UsersApi.inst.sequelize.models.setPasswordToken.findAll({ where: {expires: { [Sequelize.Op.lt]: new Date()} }})
+        .then((spts: any) => {
         // delete expired tokens for all users
          for (let spt of spts){
-             UsersApi.model.setPasswordToken.destroy(spt);
+             spt.destroy();
          }
 
         const tokenDurationSec = 3600 * 24; //1 day
@@ -158,14 +166,19 @@ const createSetPasswordToken = (user: DbUser, message: string) => {
         //    user.setPasswordTokens = [];
         //}
 
-        UsersApi.model.setPasswordToken.findAll({where: { idUser: user.Id}}).then( (spt: DbSetPasswordToken[])  => {
+        UsersApi.inst.sequelize.models.setPasswordToken.findAll({where: { idUser: user.Id}}).then( (spt: DbSetPasswordToken[])  => {
             if(spt !== null && spt !== undefined && spt.length > 0) {
                 token = spt[0];
             } else
             {
+                if(user.Id === undefined) {
+                    throw new Error();
+                }
+
                 const dt = new Date();
                 dt.setSeconds(dt.getSeconds() + tokenDurationSec);
                 token = {
+                    Id: undefined,
                     Expires: dt,
                     Message: message,
                     IdUser: user.Id,
@@ -173,7 +186,7 @@ const createSetPasswordToken = (user: DbUser, message: string) => {
                 };
             }
 
-            UsersApi.model.setPasswordToken.create(token).then((t: DbSetPasswordToken) => {
+            UsersApi.inst.sequelize.models.setPasswordToken.create(token).then((t: DbSetPasswordToken) => {
                 // send email to user
             });
         })

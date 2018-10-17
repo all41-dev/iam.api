@@ -1,52 +1,34 @@
-import express from "express";
+import {ApiBase} from "@informaticon/base-microservice";
 import * as Sequelize from "sequelize";
+import {DbUser} from "./models/db/user";
+import {DbSetPasswordToken} from "./models/db/setPasswordToken";
 import {UsersController} from "./controllers/users.controller";
 
 export * from "./controllers/users.controller";
 
 /** Hosts route definitions and sequelize model initialization */
-export class UsersApi {
-    public static model: any;
-    public static sequelize: Sequelize.Sequelize;
+export class UsersApi extends ApiBase{
+    public registerRoutes() {
+        // todo: doesn't work, nice to have for API documentation
+        //this.express.use('/api', express.static("static"));
 
-    public static registerRoutes = (app: express.Application) => {
-        app.use("/api/users", UsersController);
-    }
-    public static registerModel: any = (sequelize: Sequelize.Sequelize, ) => {
-        UsersApi.sequelize = sequelize;
+        this.express.use("/api/users", UsersController);
+    };
 
-        UsersApi.model = {
-            sample : sequelize.define("sample", {
-                Name: {
-                    type: Sequelize.STRING,
-                },
-            }),
-            user : sequelize.define("user", {
-                Id : { type: Sequelize.INTEGER, autoIncrement: true, primaryKey: true },
-                Email : { type: Sequelize.STRING, },
-                Hash : { type: Sequelize.STRING, },
-                Salt : { type: Sequelize.STRING, }
-            }, {
-                tableName: "Users",
 
-            }),
-            setPasswordToken : sequelize.define("setPasswordToken", {
-                Id : { type: Sequelize.INTEGER, autoIncrement: true, primaryKey: true},
-                IdUser : { type: Sequelize.INTEGER, },
-                Message : { type: Sequelize.STRING, },
-                Expires : { type: Sequelize.STRING, },// todo refactor type
-                TokenHash: { type: Sequelize.STRING, }
-            }, {
-                tableName: "SetPasswordTokens"
-            })
+    public registerModels() : Sequelize.Models {
+        this.sequelize.models = {
+            user : this.sequelize.define(DbUser.MODEL_NAME, DbUser.MODEL_DEFINITION , DbUser.MODEL_OPTIONS),
+            setPasswordToken : this.sequelize.define(DbSetPasswordToken.MODEL_NAME, DbSetPasswordToken.MODEL_DEFINITION , DbSetPasswordToken.MODEL_OPTIONS),
         };
-        UsersApi.model.user.hasMany(UsersApi.model.setPasswordToken, {
+
+        this.sequelize.models.user.hasMany(this.sequelize.models.setPasswordToken, {
             foreignKey: 'IdUser'
         });
-        UsersApi.model.setPasswordToken.belongsTo(UsersApi.model.user, {
+        this.sequelize.models.setPasswordToken.belongsTo(this.sequelize.models.user, {
             foreignKey: 'IdUser'
         });
 
-        return UsersApi.model;
+        return this.sequelize.models;
     }
 }
