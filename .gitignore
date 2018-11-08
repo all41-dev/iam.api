@@ -133,3 +133,6 @@ fabric.properties
 
 # Editor-based Rest Client
 .idea/httpRequests
+
+# js files in the whole project
+**/*.js
