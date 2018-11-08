@@ -3,6 +3,7 @@ import * as Sequelize from "sequelize";
 import {DbUser} from "./models/db/user";
 import {DbSetPasswordToken} from "./models/db/setPasswordToken";
 import {UsersController} from "./controllers/users.controller";
+import {SetPasswordTokenController} from "./controllers/set-password-token.controller";
 
 export * from "./controllers/users.controller";
 
@@ -13,6 +14,7 @@ export class UsersApi extends ApiBase{
         //this.express.use('/api', express.static("static"));
 
         this.express.use("/api/users", UsersController);
+        this.express.use("/api/set-password-token", SetPasswordTokenController);
     };
 
 

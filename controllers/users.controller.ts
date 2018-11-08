@@ -40,6 +40,23 @@ router.get('/:id', (req: Request, res: Response): void => {
     entity.doGet(UsersApi.inst.sequelize.models.user, options, res);
 });
 
+router.get('/:id/tokens', (req: Request, res: Response): void => {
+    const options: FindOptions<DbSetPasswordToken> = {};
+    const entity = new EntityUser();
+
+    entity.setPagination(req, options);
+
+    const userId = Number(req.params.id);
+    if(isNaN(userId)){
+        throw new Error(`User id must be a number, received value is: ${req.params.id}`);
+    }
+    options.where = {
+        IdUser: userId
+    };
+
+    entity.doGet(UsersApi.inst.sequelize.models.setPasswordToken, options, res);
+});
+
 
 /**
  * @summary validates user credentials
@@ -97,6 +114,19 @@ router.patch('/:id', (req: Request, res: Response) => {
 
     try {
         entity.update(req, options, model, res);
+    } catch (e) {
+        res.statusCode = 400;
+        res.send({message: e.message});
+    }
+});
+
+router.delete('/:id', (req: Request, res: Response) => {
+    const model = UsersApi.inst.sequelize.models.user;
+    const entity = new EntityUser();
+    const options: FindOptions<DbUser> = {where: {Id: req.params.id}};
+
+    try {
+        entity.delete(req, options, model, res);
     } catch (e) {
         res.statusCode = 400;
         res.send({message: e.message});

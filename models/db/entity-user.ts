@@ -1,6 +1,6 @@
 import {Entity} from "@informaticon/base-microservice/index";
 import {Request} from "express";
-import {FindOptions} from "sequelize";
+import {DestroyOptions, FindOptions} from "sequelize";
 import * as Sequelize from "sequelize";
 import * as crypto from "crypto"
 import {DbUser} from "./user";
@@ -93,6 +93,11 @@ export class EntityUser extends Entity<DbUser, User> {
             throw new Error(`The email address ${user.email} is not valid. Update has been canceled`);
         }
     };
+
+    public async preDelete(id: number): Promise<number> {
+        const options: DestroyOptions = {where: {IdUser: id}}
+        return UsersApi.inst.sequelize.models.setPasswordToken.destroy(options);
+    }
 
     /** @summary Creates a change password token
      * Considers that permission to create the token has been checked already
