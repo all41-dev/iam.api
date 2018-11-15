@@ -1,10 +1,16 @@
 import { Router, Request, Response } from "express";
 import {UsersApi} from "../users-api";
 import {DbSetPasswordToken} from "../models/db/setPasswordToken";
-import {FindOptions} from "sequelize";
+import {FindOptions, Model} from "sequelize";
 import {EntitySetPasswordToken} from "../models/db/entity-set-password-token";
+import * as Sequelize from "sequelize";
+import {DbUser} from "../models/db/user";
 
 const router: Router = Router();
+
+const getModel = (): Model<Sequelize.Instance<DbSetPasswordToken>, DbSetPasswordToken> => {
+    return UsersApi.inst.sequelize.models.setPasswordToken as Model<Sequelize.Instance<DbSetPasswordToken>, DbSetPasswordToken>;
+};
 
 /**
  * Returns all users, if page or size are missing, returns all records
@@ -19,7 +25,7 @@ router.get('/', (req: Request, res: Response) => {
     entity.setPagination(req, options);
     entity.setFilter(req, options);
 
-    entity.doGet(UsersApi.inst.sequelize.models.setPasswordToken, options, res);
+    entity.doGet(getModel(), options, res);
 });
 
 router.get('/user/:id', (req: Request, res: Response): void => {
@@ -36,7 +42,7 @@ router.get('/user/:id', (req: Request, res: Response): void => {
         IdUser: userId
     };
 
-    entity.doGet(UsersApi.inst.sequelize.models.setPasswordToken, options, res);
+    entity.doGet(getModel(), options, res);
 });
 
 /**
@@ -48,11 +54,10 @@ router.get('/user/:id', (req: Request, res: Response): void => {
  * @param email
  */
 router.post('/', (req: Request, res: Response) => {
-    const model = UsersApi.inst.sequelize.models.setPasswordToken;
     const entity = new EntitySetPasswordToken();
 
     try {
-        entity.create(req, model, res);
+        entity.create(req, getModel(), res);
     } catch (e) {
         res.statusCode = 400;
         res.send({message: e.message});
@@ -68,12 +73,11 @@ router.post('/', (req: Request, res: Response) => {
  * @param email
  */
 router.patch('/:id', (req: Request, res: Response) => {
-    const model = UsersApi.inst.sequelize.models.setPasswordToken;
     const entity = new EntitySetPasswordToken();
     const options: FindOptions<DbSetPasswordToken> = {where: {Id: req.params.id}};
 
     try {
-        entity.update(req, options, model, res);
+        entity.update(req, options, getModel(), res);
     } catch (e) {
         res.statusCode = 400;
         res.send({message: e.message});
@@ -81,12 +85,11 @@ router.patch('/:id', (req: Request, res: Response) => {
 });
 
 router.delete('/:id', (req: Request, res: Response) => {
-    const model = UsersApi.inst.sequelize.models.setPasswordToken;
     const entity = new EntitySetPasswordToken();
     const options: FindOptions<DbSetPasswordToken> = {where: {Id: req.params.id}};
 
     try {
-        entity.delete(req, options, model, res);
+        entity.delete(req, options, getModel(), res);
     } catch (e) {
         res.statusCode = 400;
         res.send({message: e.message});

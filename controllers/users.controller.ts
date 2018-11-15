@@ -1,11 +1,16 @@
 import { Router, Request, Response } from "express";
 import {UsersApi} from "../users-api";
 import {DbUser} from "../models/db/user";
-import {DbSetPasswordToken} from "../models/db/setPasswordToken";
-import {FindOptions} from "sequelize";
+import {FindOptions, Model} from "sequelize";
 import {EntityUser} from "../models/db/entity-user";
+import * as Sequelize from "sequelize";
+import {EntitySetPasswordToken} from "../models/db/entity-set-password-token";
 
 const router: Router = Router();
+
+const getModel = (): Model<Sequelize.Instance<DbUser>, DbUser> => {
+    return UsersApi.inst.sequelize.models.user as Model<Sequelize.Instance<DbUser>, DbUser>;
+};
 
 /**
  * Returns all users, if page or size are missing, returns all records
@@ -20,7 +25,7 @@ router.get('/', (req: Request, res: Response) => {
     entity.setPagination(req, options);
     entity.setFilter(req, options);
 
-    entity.doGet(UsersApi.inst.sequelize.models.user, options, res);
+    entity.doGet(getModel(), options, res);
 });
 
 router.get('/:id', (req: Request, res: Response): void => {
@@ -37,26 +42,8 @@ router.get('/:id', (req: Request, res: Response): void => {
         Id: userId
     };
 
-    entity.doGet(UsersApi.inst.sequelize.models.user, options, res);
+    entity.doGet(getModel(), options, res);
 });
-
-router.get('/:id/tokens', (req: Request, res: Response): void => {
-    const options: FindOptions<DbSetPasswordToken> = {};
-    const entity = new EntityUser();
-
-    entity.setPagination(req, options);
-
-    const userId = Number(req.params.id);
-    if(isNaN(userId)){
-        throw new Error(`User id must be a number, received value is: ${req.params.id}`);
-    }
-    options.where = {
-        IdUser: userId
-    };
-
-    entity.doGet(UsersApi.inst.sequelize.models.setPasswordToken, options, res);
-});
-
 
 /**
  * @summary validates user credentials
@@ -72,7 +59,7 @@ router.post('/authenticate', (req: Request, res: Response) => {
     // to be implemented when oauth microservice will require this function
 });
 
-router.put('/change-password', (req: Request, res: Response) => {
+router.put('/change-password/:token', (req: Request, res: Response) => {
     // Receives a change password token ( covers new user and lost password scenarios)
     // Receives a new password string
     // Try to retrieve the token from db
@@ -88,11 +75,10 @@ router.put('/change-password', (req: Request, res: Response) => {
  * @param email
  */
 router.post('/', (req: Request, res: Response) => {
-    const model = UsersApi.inst.sequelize.models.user;
     const entity = new EntityUser();
 
     try {
-        entity.create(req, model, res);
+        entity.create(req, getModel(), res);
     } catch (e) {
         res.statusCode = 400;
         res.send({message: e.message});
@@ -108,12 +94,11 @@ router.post('/', (req: Request, res: Response) => {
  * @param email
  */
 router.patch('/:id', (req: Request, res: Response) => {
-    const model = UsersApi.inst.sequelize.models.user;
     const entity = new EntityUser();
     const options: FindOptions<DbUser> = {where: {Id: req.params.id}};
 
     try {
-        entity.update(req, options, model, res);
+        entity.update(req, options, getModel(), res);
     } catch (e) {
         res.statusCode = 400;
         res.send({message: e.message});
@@ -121,12 +106,11 @@ router.patch('/:id', (req: Request, res: Response) => {
 });
 
 router.delete('/:id', (req: Request, res: Response) => {
-    const model = UsersApi.inst.sequelize.models.user;
     const entity = new EntityUser();
     const options: FindOptions<DbUser> = {where: {Id: req.params.id}};
 
     try {
-        entity.delete(req, options, model, res);
+        entity.delete(req, options, getModel(), res);
     } catch (e) {
         res.statusCode = 400;
         res.send({message: e.message});
@@ -156,7 +140,7 @@ router.post('/lost-password/:email', (req: Request, res: Response) => {
     UsersApi.inst.sequelize.models.user.find({where: {
             email: email
         }}).then((user: DbUser[]) => {
-            const eu = new EntityUser();
+            const eu = new EntitySetPasswordToken();
             eu.createSetPasswordToken(user[0], 'lost password message -> tbd');
     });
 });

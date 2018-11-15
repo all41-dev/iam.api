@@ -1,32 +1,39 @@
 import * as Sequelize from "sequelize";
+import {DbEntity, SequelizeAttributes} from "@informaticon/base-microservice";
+import {DbUser, DbUserInstance} from "./user";
 
-export class DbSetPasswordToken {
-    public Id: number | undefined;
-
+export class DbSetPasswordToken extends DbEntity {
     //@ForeignKey(() => DbUser)
     public IdUser!: number;
-
     public Message!: string;
-
     public Expires!: Date;
-
     public TokenHash!: string;
 
-    //@BelongsTo(() => DbUser)
-    //public user!: DbUser;
+    public user?: DbUser | DbUser['Id'];
 
     // public CreatedAt: number | undefined;// timestamp
     // public UpdatedAt: number | undefined// timestamp
 
-    public static MODEL_NAME = 'dbSetPasswordToken';
-    public static MODEL_DEFINITION = {
-        Id : { type: Sequelize.INTEGER, autoIncrement: true, primaryKey: true},
-        IdUser : { type: Sequelize.INTEGER, },
-        Message : { type: Sequelize.STRING, },
-        Expires : { type: Sequelize.STRING, },// todo refactor type
-        TokenHash: { type: Sequelize.STRING, }
+    static factory = (sequelize: Sequelize.Sequelize): Sequelize.Model<DbSetPasswordTokenInstance, DbSetPasswordToken> => {
+        const attr: SequelizeAttributes<DbSetPasswordToken> = {
+            Id : { type: Sequelize.INTEGER, autoIncrement: true, primaryKey: true},
+            IdUser : { type: Sequelize.INTEGER, },
+            Message : { type: Sequelize.STRING, },
+            Expires : { type: Sequelize.STRING, },// todo refactor type
+            TokenHash: { type: Sequelize.STRING, }
+        };
+        const def =  sequelize.define<DbSetPasswordTokenInstance, DbSetPasswordToken>('dbSetPasswordToken', attr, { tableName: "SetPasswordTokens" });
+
+        def.associate = models => {
+            def.belongsTo(models.user, {as: 'user', foreignKey: 'IdUser'})
+        };
+
+        return def;
     };
-    public static MODEL_OPTIONS = {
-        tableName: "SetPasswordTokens",
-    }
+}
+
+export interface DbSetPasswordTokenInstance extends Sequelize.Instance<DbSetPasswordToken>, DbSetPasswordToken {
+    getUser: Sequelize.BelongsToGetAssociationMixin<DbUserInstance>;
+    setUser: Sequelize.BelongsToSetAssociationMixin<DbUserInstance, DbUserInstance['Id']>;
+    createUser: Sequelize.BelongsToCreateAssociationMixin<DbUser, DbUserInstance>;
 }

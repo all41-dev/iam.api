@@ -1,11 +1,13 @@
 import {Entity} from "@informaticon/base-microservice/index";
 import {Request} from "express";
-import {DestroyOptions, FindOptions} from "sequelize";
-import * as Sequelize from "sequelize";
-import * as crypto from "crypto"
+import {FindOptions} from "sequelize";
 import {SetPasswordToken} from "@informaticon/users-model";
+import {DbSetPasswordToken, DbSetPasswordTokenInstance} from "./setPasswordToken";
+import {DbUser} from "./user";
 import {UsersApi} from "../../users-api";
-import {DbSetPasswordToken} from "./setPasswordToken";
+import * as Sequelize from "sequelize";
+import * as crypto from "crypto";
+import * as NodeMailer from "nodemailer"
 
 export class EntitySetPasswordToken extends Entity<DbSetPasswordToken, SetPasswordToken> {
     // noinspection JSMethodCanBeStatic
@@ -19,7 +21,8 @@ export class EntitySetPasswordToken extends Entity<DbSetPasswordToken, SetPasswo
     }
 
     // noinspection JSMethodCanBeStatic
-    public dbToClient(dbObj: DbSetPasswordToken): SetPasswordToken {
+    public dbToClient(inst: DbSetPasswordTokenInstance): SetPasswordToken {
+        const dbObj = inst.get();
         return new SetPasswordToken(
             dbObj.Id,
             dbObj.IdUser,
@@ -71,7 +74,7 @@ export class EntitySetPasswordToken extends Entity<DbSetPasswordToken, SetPasswo
         //     throw e;
         // });
     }
-    public postCreation(user: DbSetPasswordToken) {
+    public postCreation(inst: DbSetPasswordTokenInstance) {
         // this.createSetPasswordToken(user, 'create user message -> tbd');
     }
 
@@ -87,4 +90,59 @@ export class EntitySetPasswordToken extends Entity<DbSetPasswordToken, SetPasswo
         // return UsersApi.inst.sequelize.models.setPasswordToken.destroy(options);
         throw new Error('not implemented yet');
     }
+
+    createSetPasswordToken = (user: DbUser, message: string) => {
+        UsersApi.inst.sequelize.models.setPasswordToken.findAll({ where: {expires: { [Sequelize.Op.lt]: new Date()} }})
+            .then((spts: any) => {
+                // delete expired tokens for all users
+                for (let spt of spts){
+                    spt.destroy();
+                }
+
+                const tokenDurationSec = 3600 * 24; //1 day
+                let token : DbSetPasswordToken;
+                //if(user.setPasswordTokens === undefined){
+                //    user.setPasswordTokens = [];
+                //}
+
+                UsersApi.inst.sequelize.models.setPasswordToken.findAll({where: { idUser: user.Id}}).then( (spt: DbSetPasswordToken[])  => {
+                    if(spt !== null && spt !== undefined && spt.length > 0) {
+                        token = spt[0];
+                    } else
+                    {
+                        if(user.Id === undefined) {
+                            throw new Error();
+                        }
+
+                        const dt = new Date();
+                        dt.setSeconds(dt.getSeconds() + tokenDurationSec);
+                        token = {
+                            Id: undefined,
+                            Expires: dt,
+                            Message: message,
+                            IdUser: user.Id,
+                            TokenHash: crypto.randomBytes(64).toString('hex')
+                        };
+                    }
+
+                    UsersApi.inst.sequelize.models.setPasswordToken.create(token).then(async (t: DbSetPasswordTokenInstance) => {
+                        // send email to user
+                        const user = await t.getUser();
+
+                        const smtp = NodeMailer.createTransport({
+                            port: 465,//587,
+                            host: 'smtp-relay.gmail.com',
+                            secure: true,
+                        });
+                        smtp.sendMail({
+                            from: 'user-management@informaticon.com',
+                            to: user.Email,
+                            subject: 'Informaticon microservice password change',
+                            text: `http://localhost:4201/users/change-password/${t.TokenHash}`,
+                            html: `<a href="http://localhost:4201/users/change-password/${t.TokenHash}">change your password</a>`
+                        });
+                    });
+                })
+            });
+    };
 }

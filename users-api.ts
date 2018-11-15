@@ -19,18 +19,17 @@ export class UsersApi extends ApiBase{
 
 
     public registerModels() : Sequelize.Models {
-        this.sequelize.models = {
-            user : this.sequelize.define(DbUser.MODEL_NAME, DbUser.MODEL_DEFINITION , DbUser.MODEL_OPTIONS),
-            setPasswordToken : this.sequelize.define(DbSetPasswordToken.MODEL_NAME, DbSetPasswordToken.MODEL_DEFINITION , DbSetPasswordToken.MODEL_OPTIONS),
+        const models = this.sequelize.models = {
+            user : DbUser.factory(this.sequelize),
+            setPasswordToken : DbSetPasswordToken.factory(this.sequelize),
         };
 
-        this.sequelize.models.user.hasMany(this.sequelize.models.setPasswordToken, {
-            foreignKey: 'IdUser'
-        });
-        this.sequelize.models.setPasswordToken.belongsTo(this.sequelize.models.user, {
-            foreignKey: 'IdUser'
+        Object.keys(models).forEach(entityName => {
+            if(models[entityName].associate) {
+                models[entityName].associate(models)
+            }
         });
 
-        return this.sequelize.models;
+        return models;
     }
 }

@@ -3,10 +3,11 @@ import {Request} from "express";
 import {DestroyOptions, FindOptions} from "sequelize";
 import * as Sequelize from "sequelize";
 import * as crypto from "crypto"
-import {DbUser} from "./user";
+import {DbUser, DbUserInstance} from "./user";
 import {User} from "@informaticon/users-model";
 import {UsersApi} from "../../users-api";
 import {DbSetPasswordToken} from "./setPasswordToken";
+import {EntitySetPasswordToken} from "./entity-set-password-token";
 
 export class EntityUser extends Entity<DbUser, User> {
     // noinspection JSMethodCanBeStatic
@@ -20,7 +21,8 @@ export class EntityUser extends Entity<DbUser, User> {
     }
 
     // noinspection JSMethodCanBeStatic
-    public dbToClient(dbObj: DbUser): User {
+    public dbToClient(dbInst: DbUserInstance): User {
+        const dbObj = dbInst.get();
         return new User(
             dbObj.Id,
             dbObj.Email
@@ -46,8 +48,10 @@ export class EntityUser extends Entity<DbUser, User> {
         }
 
         obj.Email = clientObj.email;
-        obj.Hash = "hashvalue";
-        obj.Salt = "saltvalue";
+
+        // Set through the password update process
+        //obj.Hash = "hashvalue";
+        //obj.Salt = "saltvalue";
 
         return obj;
     }
@@ -83,8 +87,9 @@ export class EntityUser extends Entity<DbUser, User> {
             throw e;
         });
     }
-    public postCreation(user: DbUser) {
-        this.createSetPasswordToken(user, 'create user message -> tbd');
+    public postCreation(user: DbUserInstance) {
+        const espt = new EntitySetPasswordToken();
+        espt.createSetPasswordToken(user.get(), 'create user message -> tbd');
     }
 
     public async preUpdate(user: User) : Promise<void> {
@@ -107,44 +112,4 @@ export class EntityUser extends Entity<DbUser, User> {
      * Send an email to the user with the token value
      * Wording of the email will change whether the token is for a new user or a lost password
      */
-    createSetPasswordToken = (user: DbUser, message: string) => {
-        UsersApi.inst.sequelize.models.setPasswordToken.findAll({ where: {expires: { [Sequelize.Op.lt]: new Date()} }})
-            .then((spts: any) => {
-                // delete expired tokens for all users
-                for (let spt of spts){
-                    spt.destroy();
-                }
-
-                const tokenDurationSec = 3600 * 24; //1 day
-                let token : DbSetPasswordToken;
-                //if(user.setPasswordTokens === undefined){
-                //    user.setPasswordTokens = [];
-                //}
-
-                UsersApi.inst.sequelize.models.setPasswordToken.findAll({where: { idUser: user.Id}}).then( (spt: DbSetPasswordToken[])  => {
-                    if(spt !== null && spt !== undefined && spt.length > 0) {
-                        token = spt[0];
-                    } else
-                    {
-                        if(user.Id === undefined) {
-                            throw new Error();
-                        }
-
-                        const dt = new Date();
-                        dt.setSeconds(dt.getSeconds() + tokenDurationSec);
-                        token = {
-                            Id: undefined,
-                            Expires: dt,
-                            Message: message,
-                            IdUser: user.Id,
-                            TokenHash: crypto.randomBytes(64).toString('hex')
-                        };
-                    }
-
-                    UsersApi.inst.sequelize.models.setPasswordToken.create(token).then((t: DbSetPasswordToken) => {
-                        // send email to user
-                    });
-                })
-            });
-    };
 }

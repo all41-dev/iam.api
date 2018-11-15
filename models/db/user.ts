@@ -1,22 +1,40 @@
 import * as Sequelize from "sequelize";
-import {DbEntity} from "@informaticon/base-microservice";
+import {DbEntity, SequelizeAttributes} from "@informaticon/base-microservice";
+import {DbSetPasswordToken, DbSetPasswordTokenInstance} from "./setPasswordToken";
 
 export class DbUser extends DbEntity {
-    public Id!: number | undefined;
-    public Email!: string | undefined;
-    public Hash!: string;
-    public Salt!: string;
-    public CreatedAt!: number;// timestamp
-    public UpdatedAt!: number;// timestamp
+    Email: string | undefined;
+    Hash: string;
+    Salt: string;
 
-    public static MODEL_NAME = 'user';
-    public static MODEL_DEFINITION = {
-        Id : { type: Sequelize.INTEGER, autoIncrement: true, primaryKey: true },
-        Email : { type: Sequelize.STRING, },
-        Hash : { type: Sequelize.STRING, },
-        Salt : { type: Sequelize.STRING, }
+    public setPasswordTokens?: DbSetPasswordToken[] | DbSetPasswordToken['Id'][];
+
+    static factory = (sequelize: Sequelize.Sequelize): Sequelize.Model<DbUserInstance, DbUser> => {
+        const attr: SequelizeAttributes<DbUser> = {
+            Id : { type: Sequelize.INTEGER, autoIncrement: true, primaryKey: true },
+            Email : { type: Sequelize.STRING, },
+            Hash : { type: Sequelize.STRING, },
+            Salt : { type: Sequelize.STRING, }
+        };
+        const def = sequelize.define<DbUserInstance, DbUser>('user', attr, { tableName: "Users" });
+
+        def.associate = models => {
+            def.hasMany(models.setPasswordToken, {as: 'setPasswordTokens', foreignKey: 'IdUser'});
+        };
+
+        return def;
     };
-    public static MODEL_OPTIONS = {
-        tableName: "Users",
-    }
+}
+
+export interface DbUserInstance extends Sequelize.Instance<DbUser>, DbUser {
+    getSetPasswordTokens: Sequelize.HasManyGetAssociationsMixin<DbSetPasswordTokenInstance>;
+    setSetPasswordTokens: Sequelize.HasManySetAssociationsMixin<DbSetPasswordTokenInstance, DbSetPasswordTokenInstance['Id']>;
+    addSetPasswordTokens: Sequelize.HasManyAddAssociationsMixin<DbSetPasswordTokenInstance, DbSetPasswordTokenInstance['Id']>;
+    addSetPasswordToken: Sequelize.HasManyAddAssociationMixin<DbSetPasswordTokenInstance, DbSetPasswordTokenInstance['Id']>;
+    createSetPasswordToken: Sequelize.HasManyCreateAssociationMixin<DbSetPasswordToken, DbSetPasswordTokenInstance>;
+    removeSetPasswordToken: Sequelize.HasManyRemoveAssociationMixin<DbSetPasswordTokenInstance, DbSetPasswordTokenInstance['Id']>;
+    removeSetPasswordTokens: Sequelize.HasManyRemoveAssociationsMixin<DbSetPasswordTokenInstance, DbSetPasswordTokenInstance['Id']>;
+    hasSetPasswordToken: Sequelize.HasManyHasAssociationMixin<DbSetPasswordTokenInstance, DbSetPasswordTokenInstance['Id']>;
+    hasSetPasswordTokens: Sequelize.HasManyHasAssociationsMixin<DbSetPasswordTokenInstance, DbSetPasswordTokenInstance['Id']>;
+    countSetPasswordTokens: Sequelize.HasManyCountAssociationsMixin;
 }
