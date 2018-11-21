@@ -1,12 +1,12 @@
 import {Entity} from "@informaticon/base-microservice/index";
-import {Request} from "express";
-import {DestroyOptions, FindOptions} from "sequelize";
+import {Request, Response} from "express";
+import {DestroyOptions, FindOptions, Model} from "sequelize";
 import * as Sequelize from "sequelize";
 import * as crypto from "crypto"
 import {DbUser, DbUserInstance} from "./user";
 import {User} from "@informaticon/users-model";
 import {UsersApi} from "../../users-api";
-import {DbSetPasswordToken} from "./setPasswordToken";
+import {DbSetPasswordToken, DbSetPasswordTokenInstance} from "./setPasswordToken";
 import {EntitySetPasswordToken} from "./entity-set-password-token";
 
 export class EntityUser extends Entity<DbUser, User> {
@@ -104,12 +104,16 @@ export class EntityUser extends Entity<DbUser, User> {
         return UsersApi.inst.sequelize.models.setPasswordToken.destroy(options);
     }
 
-    /** @summary Creates a change password token
-     * Considers that permission to create the token has been checked already
-     * Verify existing token for the user
-     * if exists then update validity
-     * if not exists create (generate token value and store)
-     * Send an email to the user with the token value
-     * Wording of the email will change whether the token is for a new user or a lost password
-     */
+    public doGetFromToken(
+        model: Model<Sequelize.Instance<DbSetPasswordToken>, DbSetPasswordToken>,
+        options: FindOptions<DbSetPasswordToken>, res: Response) {
+
+        model.find(options).then((spt: DbSetPasswordTokenInstance) => {
+            if(spt === null) {
+                res.json("The provided token is not valid.")
+            } else {
+                spt.getUser().then((usr: DbUserInstance) => res.json([this.dbToClient(usr)]))
+            }
+        })
+    }
 }

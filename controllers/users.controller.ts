@@ -1,10 +1,13 @@
 import { Router, Request, Response } from "express";
 import {UsersApi} from "../users-api";
-import {DbUser} from "../models/db/user";
+import {DbUser, DbUserInstance} from "../models/db/user";
 import {FindOptions, Model} from "sequelize";
 import {EntityUser} from "../models/db/entity-user";
 import * as Sequelize from "sequelize";
 import {EntitySetPasswordToken} from "../models/db/entity-set-password-token";
+import {DbSetPasswordToken, DbSetPasswordTokenInstance} from "../models/db/setPasswordToken";
+import Rand from "csprng";
+import * as Bcrypt from "bcrypt"
 
 const router: Router = Router();
 
@@ -45,6 +48,25 @@ router.get('/:id', (req: Request, res: Response): void => {
     entity.doGet(getModel(), options, res);
 });
 
+router.get('/from-token/:token', (req: Request, res: Response): void => {
+    const entity = new EntityUser();
+
+    const token = req.params.token;
+    if(token === undefined){
+        throw new Error(`Token is not set`);
+    }
+    const options: FindOptions<DbSetPasswordToken> = {
+        where: {
+            TokenHash: token
+        }
+    };
+
+    const setPasswordTokenModel = UsersApi.inst.sequelize.models.setPasswordToken as
+        Model<Sequelize.Instance<DbSetPasswordToken>, DbSetPasswordToken>;
+
+    entity.doGetFromToken(setPasswordTokenModel, options, res);
+});
+
 /**
  * @summary validates user credentials
  * Make the hash from the user provided password and stored salt
@@ -59,11 +81,38 @@ router.post('/authenticate', (req: Request, res: Response) => {
     // to be implemented when oauth microservice will require this function
 });
 
-router.put('/change-password/:token', (req: Request, res: Response) => {
-    // Receives a change password token ( covers new user and lost password scenarios)
-    // Receives a new password string
-    // Try to retrieve the token from db
-    // If exists and valid, invoke the save password process
+/**
+ * @summary Receives a change password token ( covers new user and lost password scenarios)
+ * Receives a new password string
+ * Try to retrieve the token from db
+ * If exists and valid, invoke the save password process
+ */
+router.patch('/change-password/:token', (req: Request, res: Response) => {
+    const tokenModel = UsersApi.inst.sequelize.models.setPasswordToken as
+        Model<Sequelize.Instance<DbSetPasswordToken>, DbSetPasswordToken>;
+    const userModel = UsersApi.inst.sequelize.models.user as
+        Model<Sequelize.Instance<DbUser>, DbUser>;
+
+    const token = req.params.token;
+    tokenModel.sync().then(async () => {
+        const options: FindOptions<DbSetPasswordToken> = {
+            where: {
+                TokenHash: token
+            }
+        };
+        tokenModel.find(options).then(async (spt: DbSetPasswordTokenInstance) =>
+            spt.getUser().then(async (user) => {
+                console.info('password: ' + req.body.password);
+                const salt = Bcrypt.genSaltSync(10);
+                const hash = Bcrypt.hashSync(req.body.password, salt);
+                user.update({
+                    Salt: salt,
+                    Hash: hash
+                }).then((updatedUser) => {
+                    spt.destroy().then(() => res.json())
+                })
+            }));
+    });
 });
 
 /**

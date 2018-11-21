@@ -91,6 +91,14 @@ export class EntitySetPasswordToken extends Entity<DbSetPasswordToken, SetPasswo
         throw new Error('not implemented yet');
     }
 
+    /** @summary Creates a change password token
+     * Considers that permission to create the token has been checked already
+     * Verify existing token for the user
+     * if exists then update validity
+     * if not exists create (generate token value and store)
+     * Send an email to the user with the token value
+     * Wording of the email will change whether the token is for a new user or a lost password
+     */
     createSetPasswordToken = (user: DbUser, message: string) => {
         UsersApi.inst.sequelize.models.setPasswordToken.findAll({ where: {expires: { [Sequelize.Op.lt]: new Date()} }})
             .then((spts: any) => {
@@ -138,8 +146,8 @@ export class EntitySetPasswordToken extends Entity<DbSetPasswordToken, SetPasswo
                             from: 'user-management@informaticon.com',
                             to: user.Email,
                             subject: 'Informaticon microservice password change',
-                            text: `http://localhost:4201/users/change-password/${t.TokenHash}`,
-                            html: `<a href="http://localhost:4201/users/change-password/${t.TokenHash}">change your password</a>`
+                            text: `http://localhost:4201/change-password/${t.TokenHash}`,
+                            html: `<a href="http://localhost:4201/change-password/${t.TokenHash}">change your password</a>`
                         });
                     });
                 })
