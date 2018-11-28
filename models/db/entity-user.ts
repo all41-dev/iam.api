@@ -89,7 +89,7 @@ export class EntityUser extends Entity<DbUser, User> {
     }
     public postCreation(user: DbUserInstance) {
         const espt = new EntitySetPasswordToken();
-        espt.createSetPasswordToken(user.get(), 'create user message -> tbd');
+        espt.createSetPasswordToken(user.get().Id, 'create user message -> tbd');
     }
 
     public async preUpdate(user: User) : Promise<void> {
