@@ -2,39 +2,82 @@ import ExpressOAuthServer = require("express-oauth-server");
 import {AuthorizationCode, Callback, Client, Falsey, Token, User} from "oauth2-server";
 import {UsersController} from "../controllers/users.controller";
 import Bluebird = require("bluebird");
+import {UsersApi} from "../users-api";
+import {Model} from "sequelize";
+import * as Sequelize from "sequelize";
+import {DbUser} from "./db/user";
+import {DbClient, DbClientInstance} from "./db/client";
+import {DbAccessToken} from "./db/access-token";
 
 export class IftOAuth2Server {
     static getInstance() {
         return new ExpressOAuthServer({
             model: {
-                getAccessToken: (accessToken: string) => {
+                getAccessToken: (accessToken: string): any => {
                     console.info('In getAccessToken OAuth method');
-                    return new Promise<false|""|0|Token>(() => {
-                        return Promise.resolve(0);
-                    });
+
+                    const model = UsersApi.inst.sequelize.models.accessToken as
+                        Model<Sequelize.Instance<DbAccessToken>, DbAccessToken>;
+
+                    const resp = model.findOne({
+                        where: {
+                            TokenValue: accessToken,
+                        },
+                        include: [ UsersApi.inst.sequelize.models.client, UsersApi.inst.sequelize.models.user ]
+                    }).then((inst: Sequelize.Instance<DbAccessToken>|null) => {
+                        let token: DbAccessToken;
+
+                        if (!inst || !(token = inst.get()))
+                            throw new Error('user not found');
+
+                        const obj = {
+                            accessToken: token.TokenValue,
+                            accessTokenExpiresAt: token.ExpiresAt,
+                            scope: token.Scopes,
+                            client: token.client,
+                            user: token.user,
+                        };
+
+                        return obj;
+                    });// .catch(() => {console.info('error (harps)')});
+
+                    console.info('ready to return promise');
+                    return resp;
                 },
                 getClient: (clientId: string, clientSecret: string): Promise<Client|Falsey>|any => {
                     console.info('In getClient OAuth method');
 
-                    const model = UsersController.getModel();
+                    const model = UsersApi.inst.sequelize.models.client as
+                        Model<Sequelize.Instance<DbClient>, DbClient>;
 
                     const resp = model.findOne({
                         where: {
-                            Email: 'eric@youri.ch'
+                            ClientId: clientId,
+                            //For mobile and native apps only, not used yet
+                            //ClientSecret: clientSecret
                         }
-                    }).then((inst) => {
+                    }).then((inst: Sequelize.Instance<DbClient>|null) => {
+                        let client: DbClient;
+
+                        if (!inst || !(client = inst.get()))
+                            throw new Error('user not found');
+
                         const obj = {
-                            id: clientId,
-                            accessTokenLifetime: 3600,
-                            grants: ['authorization_code', 'password', 'refresh_token', 'client_credentials'], // ['password', 'client_credentials'],
-                            refreshTokenLifetime: 3600 * 24,
-                            redirectUris: 'http://localhost:1234',
-                            // added, probably not required
-                            name: 'foo',
-                            client_id: clientId,
-                            client_secret: 'sldslkd',
-                            grant_types: 'dsldksdl',
-                            scope: 'sdddd'
+                            id: client.Id,
+                            client_id: client.ClientId,
+                            client_name: client.Name,
+                            redirectUris: client.RedirectUris,
+                            grants: DbClient.getGrants(client)
+                            // accessTokenLifetime: 3600,
+                            // grants: ['authorization_code', 'password', 'refresh_token', 'client_credentials'], // ['password', 'client_credentials'],
+                            // refreshTokenLifetime: 3600 * 24,
+                            // redirectUris: 'http://localhost:1234',
+                            // // added, probably not required
+                            // name: 'foo',
+                            // client_id: clientId,
+                            // client_secret: 'sldslkd',
+                            // grant_types: 'dsldksdl',
+                            // scope: 'sdddd'
                         };
 
                         return obj;
@@ -45,27 +88,39 @@ export class IftOAuth2Server {
                 },
                 saveToken: (token: Token, client: Client, user: User): any => {
                     console.info('In saveToken OAuth method');
-
-                    const model = UsersController.getModel();
-
+                    const model = UsersApi.inst.sequelize.models.accessToken as
+                        Model<Sequelize.Instance<DbAccessToken>, DbAccessToken>;
                     const resp = model.findOne({
                         where: {
-                            Email: 'eric@youri.ch'
+                            TokenValue: token.accessToken,
+                        },
+                        include: [ UsersApi.inst.sequelize.models.client, UsersApi.inst.sequelize.models.user ]
+                    }).then(async (inst: Sequelize.Instance<DbAccessToken>|null) => {
+                        let t: DbAccessToken;
+
+                        if (!inst || !(t = inst.get())) {
+                            //token not found -> create
+                            inst = await model.create({
+                                Scopes: token.scope === undefined ?
+                                    '' : Array.isArray(token.scope) ?
+                                        token.scope.join('|') : token.scope,
+                                ExpiresAt: token.accessTokenExpiresAt === undefined ? new Date() : token.accessTokenExpiresAt,
+                                TokenValue: token.accessToken,
+                                IdUser: user.id,
+                                IdClient: 1, //todo: retrieve the client then use pk
+                            });
+                            t = inst.get();
                         }
-                    }).then((inst) => {
-                        let user: User;
 
-                        if (!inst || !(user = inst.get()))
-                            throw new Error('user not found');
+                        const obj = {
+                            accessToken: t.TokenValue,
+                            accessTokenExpiresAt: t.ExpiresAt,
+                            scope: t.Scopes,
+                            client: t.client,
+                            user: t.user,
+                        };
 
-                        // const obj: Token = {
-                        //     id: user.Id,
-                        //     username: user.Email
-                        // };
-                        token.client = client;
-                        token.user = user;
-
-                        return token;
+                        return obj;
                     });// .catch(() => {console.info('error (harps)')});
 
                     return resp;
