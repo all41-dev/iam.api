@@ -88,8 +88,9 @@ export class EntityUser extends Entity<DbUser, User> {
         });
     }
     public postCreation(user: DbUserInstance) {
-        const espt = new EntitySetPasswordToken();
-        espt.createSetPasswordToken(user.get().Id, 'create user message -> tbd');
+        const usr = user.get();
+        if (usr.Id === undefined) throw new Error('Db user without Id');
+        new EntitySetPasswordToken().createSetPasswordToken(usr.Id, 'create user message -> tbd');
     }
 
     public async preUpdate(user: User) : Promise<void> {
@@ -108,11 +109,15 @@ export class EntityUser extends Entity<DbUser, User> {
         model: Model<Sequelize.Instance<DbSetPasswordToken>, DbSetPasswordToken>,
         options: FindOptions<DbSetPasswordToken>, res: Response) {
 
-        model.find(options).then((spt: DbSetPasswordTokenInstance) => {
-            if(spt === null) {
+        model.find(options).then((spt: Sequelize.Instance<DbSetPasswordToken>|null) => {
+            const token = spt as DbSetPasswordTokenInstance;
+            if(token === null) {
                 res.json("The provided token is not valid.")
             } else {
-                spt.getUser().then((usr: DbUserInstance) => res.json([this.dbToClient(usr)]))
+                token.getUser().then((usr: DbUserInstance|null) => {
+                    if(usr === null) throw new Error('user not found');
+                    res.json([this.dbToClient(usr)])
+                })
             }
         })
     }

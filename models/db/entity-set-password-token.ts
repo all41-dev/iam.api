@@ -52,9 +52,11 @@ export class EntitySetPasswordToken extends Entity<DbSetPasswordToken, SetPasswo
         if(clientObj.id !== null) {
             obj.Id = clientObj.id;
         }
+        if(clientObj.idUser === undefined || clientObj.expires === undefined || clientObj.tokenHash === undefined)
+            throw new Error('invalid clientObj');
 
         obj.IdUser = clientObj.idUser;
-        obj.Message = clientObj.message;
+        obj.Message = clientObj.message === undefined ?'' : clientObj.message;
         obj.Expires = clientObj.expires;
         obj.TokenHash = clientObj.tokenHash;
 
@@ -132,6 +134,8 @@ export class EntitySetPasswordToken extends Entity<DbSetPasswordToken, SetPasswo
     notifyUser = async (t: DbSetPasswordTokenInstance): Promise<void> => {
         // send email to user
         const user = await t.getUser();
+        if (user === null)
+            throw new Error('user not found from setPasswordToken');
 
         const smtp = NodeMailer.createTransport({
             port: 465,//587,

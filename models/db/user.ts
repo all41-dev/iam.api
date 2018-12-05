@@ -4,8 +4,8 @@ import {DbSetPasswordToken, DbSetPasswordTokenInstance} from "./setPasswordToken
 
 export class DbUser extends DbEntity {
     Email: string | undefined;
-    Hash: string;
-    Salt: string;
+    Hash?: string;
+    Salt?: string;
 
     public setPasswordTokens?: DbSetPasswordToken[] | DbSetPasswordToken['Id'][];
 

@@ -1,100 +1,96 @@
-import { Router, Request, Response } from "express";
+import {Router, Request, Response, NextFunction} from "express";
 import {UsersApi} from "../users-api";
 import {DbSetPasswordToken} from "../models/db/setPasswordToken";
 import {FindOptions, Model} from "sequelize";
 import {EntitySetPasswordToken} from "../models/db/entity-set-password-token";
 import * as Sequelize from "sequelize";
 import {DbUser} from "../models/db/user";
-
-const router: Router = Router();
-
-const getModel = (): Model<Sequelize.Instance<DbSetPasswordToken>, DbSetPasswordToken> => {
-    return UsersApi.inst.sequelize.models.setPasswordToken as Model<Sequelize.Instance<DbSetPasswordToken>, DbSetPasswordToken>;
-};
-
-/**
- * Returns all users, if page or size are missing, returns all records
- * @param {number} page - page # to return
- * @param {number} size - page size
- * @param {string} filter - filter string
- */
-router.get('/', (req: Request, res: Response) => {
-    const options: FindOptions<DbSetPasswordToken> = {};
-    const entity = new EntitySetPasswordToken();
-
-    entity.setPagination(req, options);
-    entity.setFilter(req, options);
-
-    entity.doGet(getModel(), options, res);
-});
-
-router.get('/user/:id', (req: Request, res: Response): void => {
-    const options: FindOptions<DbSetPasswordToken> = {};
-    const entity = new EntitySetPasswordToken();
-
-    entity.setPagination(req, options);
-
-    const userId = Number(req.params.id);
-    if(isNaN(userId)){
-        throw new Error(`User id must be a number, received value is: ${req.params.id}`);
-    }
-    options.where = {
-        IdUser: userId
-    };
-
-    entity.doGet(getModel(), options, res);
-});
-
-/**
- * @summary Creates a user entry
- * Receives email address
- * Validates correctness and uniqueness of the email
- * Saves new user in db
- * Invoke the change password token process
- * @param email
- */
-router.post('/', (req: Request, res: Response) => {
-    const entity = new EntitySetPasswordToken();
-
-    try {
-        entity.create(req, getModel(), res);
-    } catch (e) {
-        res.statusCode = 400;
-        res.send({message: e.message});
-    }
-});
-
-/**
- * @summary Creates a user entry
- * Receives email address
- * Validates correctness and uniqueness of the email
- * Saves new user in db
- * Invoke the change password token process
- * @param email
- */
-router.patch('/:id', (req: Request, res: Response) => {
-    const entity = new EntitySetPasswordToken();
-    const options: FindOptions<DbSetPasswordToken> = {where: {Id: req.params.id}};
-
-    try {
-        entity.update(req, options, getModel(), res);
-    } catch (e) {
-        res.statusCode = 400;
-        res.send({message: e.message});
-    }
-});
-
-router.delete('/:id', (req: Request, res: Response) => {
-    const entity = new EntitySetPasswordToken();
-    const options: FindOptions<DbSetPasswordToken> = {where: {Id: req.params.id}};
-
-    try {
-        entity.delete(req, options, getModel(), res);
-    } catch (e) {
-        res.statusCode = 400;
-        res.send({message: e.message});
-    }
-});
+import {ControllerBase} from "@informaticon/base-microservice";
+import * as express from "express";
+import {SetPasswordToken} from "@informaticon/users-model/user";
 
 console.log("registring example routes");
-export const SetPasswordTokenController: Router = router;
+export class SetPasswordTokenController extends ControllerBase {
+    constructor() {
+        super();
+    }
+
+    public static create(baseUrl: string, server: express.Application) {
+        const router = ControllerBase.getNewRouter();
+
+        router.get('/user/:id', (req: Request, res: Response, next: NextFunction) => {
+            new SetPasswordTokenController().getByUser(req, res, next);
+        });
+
+        router.post('/', (req: Request, res: Response, next: NextFunction) => {
+            new SetPasswordTokenController().create(req, res, next);
+        });
+
+        router.patch('/:id', (req: Request, res: Response, next: NextFunction) => {
+            new SetPasswordTokenController().update(req, res, next);
+        });
+
+        router.delete('/:id', (req: Request, res: Response, next: NextFunction) => {
+            new SetPasswordTokenController().remove(req, res, next);
+        });
+
+        server.use(baseUrl, router);
+    }
+
+    public getByUser(req: Request, res: Response, next: NextFunction) {
+        const options: FindOptions<DbSetPasswordToken> = {};
+        const entity = new EntitySetPasswordToken();
+
+        entity.setPagination(req, options);
+
+        const userId = Number(req.params.id);
+        if(isNaN(userId)){
+            throw new Error(`User id must be a number, received value is: ${req.params.id}`);
+        }
+        options.where = {
+            IdUser: userId
+        };
+
+        entity.doGet(SetPasswordTokenController.getModel(), options, res);
+    }
+
+    public create(req: Request, res: Response, next: NextFunction) {
+        const entity = new EntitySetPasswordToken();
+
+        try {
+            entity.create(req, SetPasswordTokenController.getModel(), res);
+        } catch (e) {
+            res.statusCode = 400;
+            res.send({message: e.message});
+        }
+
+    }
+
+    public update(req: Request, res: Response, next: NextFunction) {
+        const entity = new EntitySetPasswordToken();
+        const options: FindOptions<DbSetPasswordToken> = {where: {Id: req.params.id}};
+
+        try {
+            entity.update(req, options, SetPasswordTokenController.getModel(), res);
+        } catch (e) {
+            res.statusCode = 400;
+            res.send({message: e.message});
+        }
+    }
+
+    public remove(req: Request, res: Response, next: NextFunction) {
+        const entity = new EntitySetPasswordToken();
+        const options: FindOptions<DbSetPasswordToken> = {where: {Id: req.params.id}};
+
+        try {
+            entity.delete(req, options, SetPasswordTokenController.getModel(), res);
+        } catch (e) {
+            res.statusCode = 400;
+            res.send({message: e.message});
+        }
+    }
+
+    private static getModel(): Model<Sequelize.Instance<DbSetPasswordToken>, DbSetPasswordToken> {
+        return UsersApi.inst.sequelize.models.setPasswordToken as Model<Sequelize.Instance<DbSetPasswordToken>, DbSetPasswordToken>;
+    }
+}
