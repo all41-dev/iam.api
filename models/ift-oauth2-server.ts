@@ -127,6 +127,7 @@ export class IftOAuth2Server {
                 },
                 verifyScope: (token: Token, scope: string|string[]) => {
                     console.info('In verifyScope OAuth method');
+                    //todo: next
                     return new Promise<boolean>(() => {
                         return Promise.resolve(false);
                     });
