@@ -5,6 +5,8 @@ import {DbSetPasswordToken} from "./models/db/setPasswordToken";
 import {UsersController} from "./controllers/users.controller";
 import {SetPasswordTokenController} from "./controllers/set-password-token.controller";
 import {OAuthController} from "./controllers/oauth.controller";
+import {DbAccessToken} from "./models/db/access-token";
+import {DbClient} from "./models/db/client";
 
 // export * from "./controllers/users.controller";
 
@@ -23,6 +25,8 @@ export class UsersApi extends ApiBase{
         const models : Sequelize.Models = this.sequelize.models = {
             user : DbUser.factory(this.sequelize),
             setPasswordToken : DbSetPasswordToken.factory(this.sequelize),
+            accessToken : DbAccessToken.factory(this.sequelize),
+            client : DbClient.factory(this.sequelize),
         };
 
         Object.keys(models).forEach((entityName: string) => {
