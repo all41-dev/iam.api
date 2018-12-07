@@ -13,6 +13,7 @@ import {IftOAuth2Server} from "../models/ift-oauth2-server";
 import {ControllerBase} from '@informaticon/base-microservice'
 import * as express from "express";
 import { inspect } from 'util';
+var XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest;
 // import Rand from "csprng";
 
 export class UsersController extends ControllerBase {
@@ -97,6 +98,15 @@ export class UsersController extends ControllerBase {
     }
 
     public getAll(req: Request, res: Response, next: NextFunction) {
+        if( !this.hasAccess([
+            'Access/Read',
+            'Microservices/Users/Users'
+        ], req.headers.authorization)) {
+            res.status(403)
+            res.send();
+            return;
+        }
+        //Since here, the user is considered as authorized
         const options: FindOptions<DbUser> = {};
         const entity = new EntityUser();
 
@@ -144,14 +154,6 @@ export class UsersController extends ControllerBase {
     }
 
     public authenticate(req: Request, res: Response, next: NextFunction) {
-        const entity = new EntityUser();
-        const model = UsersController.getModel();
-        const grantType = req.body.grant_type;
-        const nonce = req.body.nonce;
-        const scope = req.body.scope;
-        const username = req.body.username.toLowerCase();
-        const password = req.body.password;
-
         UsersApi.inst.req = req;
         UsersApi.inst.res = res;
 
@@ -160,66 +162,7 @@ export class UsersController extends ControllerBase {
             allowExtendedTokenAttributes: true
         });
 
-        oauthSrv.token()(req, res, next).then((token: Token) => {
-            console.info(inspect(token));
-        });
-
-        // model.sync().then(() => {
-        //     model.find({
-        //         where: {
-        //             Email: username
-        //         }
-        //     }).then((inst) => {
-        //
-        //         if(inst === null){
-        //             const msg = 'user doesn\'t exist';
-        //             console.error(msg);
-        //             res.status(500).send(msg);
-        //             return;
-        //         }
-        //
-        //         const user = inst.toJSON();
-        //         const authHash = Bcrypt.hashSync(req.body.password, user.Salt);
-        //
-        //         if (authHash !== user.Hash){
-        //             res.json({error:'bad password'});
-        //         }
-        //
-        //         const token = {
-        //             client: {
-        //                 id: 1, // is thin required?
-        //                 client_id: 'democlient', // to be generated, must be unique (salt?)
-        //                 scope: 'profile',
-        //                 grants: [
-        //                     'authorization_code',
-        //                     'password',
-        //                     'refresh_token',
-        //                     'client_credentials'
-        //                 ],
-        //                 redirectUris: [
-        //                     'http://localhost/cb'
-        //                 ]
-        //             },
-        //             user: {
-        //                 id: 2, // is this required?
-        //                 username: user.Email,
-        //                 scope: 'profile'
-        //             },
-        //             access_token: '637314e3e61b80effe8cfa4b9a5486c4c5d91c11',
-        //             refresh_token: '9b0030f387666fa6f1ea90b539803101540ca1ec',
-        //             accessToken: '637314e3e61b80effe8cfa4b9a5486c4c5d91c11',
-        //             accessTokenExpiresAt: '2018-11-29T13:12:33.904Z',
-        //             refreshToken: '9b0030f387666fa6f1ea90b539803101540ca1ec',
-        //             refreshTokenExpiresAt: '2018-12-13T12:12:33.904Z',
-        //             scope: 'profile',
-        //             id_token: undefined
-        //         };
-        //
-        //         token.id_token = UsersController.getIdToken(token, nonce);
-        //
-        //         res.json(token);
-        //
-        //     })});
+        oauthSrv.token()(req, res, next);
     }
 
     public changePassword(req: Request, res: Response, next: NextFunction) {
@@ -315,5 +258,49 @@ export class UsersController extends ControllerBase {
 
     public static getModel(): Model<Sequelize.Instance<DbUser>, DbUser> {
         return UsersApi.inst.sequelize.models.user as Model<Sequelize.Instance<DbUser>, DbUser>;
+    }
+
+    private hasAccess(scope: string[], authorizationHeader: string|undefined): boolean {
+        if (authorizationHeader === undefined || !authorizationHeader.toLowerCase().startsWith('bearer ')){
+            return false;
+        }
+        const jwtString = authorizationHeader.substr(7);
+        const tokenWithHeader = Jwt.decode(jwtString, { complete: true }) as any;
+
+        if ( tokenWithHeader === null){ return false; }
+        const kid = tokenWithHeader.header.kid;
+
+        const certs = JSON.parse(this.httpGet('http://localhost:3000/oauth2/certs'));
+        const keyDef = (certs.keys as [{kid: string, n: string}]).find(k => k.kid === kid);
+        if(keyDef === undefined) { return false; }
+
+        const publicKey = keyDef.n;
+        const token = Jwt.verify(jwtString, publicKey);
+
+        console.info(token);
+        return false;
+    }
+
+    private httpGet(url: string): string
+    {
+        if(url === 'http://localhost:3000/oauth2/certs'){
+            //server calling himself causes a freeze
+            return '{\n' +
+                '            "keys": [\n' +
+                '                {\n' +
+                '                    "kty": "RSA",\n' +
+                '                    "alg": "RS256",\n' +
+                '                    "use": "sig",\n' +
+                '                    "kid": "4129db2ea1860d2e871ee48506287fb05b04ca3f",\n' +
+                '                    "n": "sphx6KhpetKXk/oR8vrDxwN8aaLsiBsYNvrWCA9oDcubuDD/YLnXH65QnNoRdlOW0+dCAStZVB3VtHR9qyUbqCvS443xC59nDrEHEpTO8+zeHzkkIp4zVU0vvowZlkVqZZA032dCEaB4LSIzZoxWa1OHSfmQgR90zMVDCI98YCNvTGrdJ66GrYRVdjnd5Jg5ebZVtfa9VMN1WBro02pLJ8K/cux/i7KO0zovDYhID90wNU/q8F1nzlDcs5TiPPBBTNWfGLMRVec2xbIpQ9T3Ou0Yn4xPUimwVRSrvkcCF1MTbm55/Jv9EdRbrVk46n3qZMbx0cHDGCUjaAcKbkVkcQ==",\n' +
+                '                    "e": "AQAB"\n' +
+                '                }\n' +
+                '            ]\n' +
+                '        }'
+        }
+        var xmlHttp = new XMLHttpRequest();
+        xmlHttp.open( "GET", url, false ); // false for synchronous request
+        xmlHttp.send( null );
+        return xmlHttp.responseText;
     }
 }

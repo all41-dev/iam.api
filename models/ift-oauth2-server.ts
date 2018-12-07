@@ -256,13 +256,15 @@ export class IftOAuth2Server {
         try {
             //const jwt = require('jsonwebtoken');
             return Jwt.sign({
-                iss: 'http://localhost:3000',
+                iss: 'http://localhost:3000', // issuer -> OAuth server (this)
+                cid: 'http://localhost:3000', // granted api
                 aud: token.client.id,
                 sub: token.user.id,
-                at_hash: token.accessToken,
                 username: token.user.username,
+                at_hash: token.accessToken,
                 // jti: nonce,
-                nonce: nonce
+                nonce: nonce,
+                scope: 'Access/Read+Microservices/Users;Access+Microservices/Users/Users'
             }, '-----BEGIN RSA PRIVATE KEY-----\n' +
                 'MIIEowIBAAKCAQEAsphx6KhpetKXk/oR8vrDxwN8aaLsiBsYNvrWCA9oDcubuDD/\n' +
                 'YLnXH65QnNoRdlOW0+dCAStZVB3VtHR9qyUbqCvS443xC59nDrEHEpTO8+zeHzkk\n' +
