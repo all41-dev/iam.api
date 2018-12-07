@@ -29,7 +29,7 @@ export class DbAccessToken extends DbEntity {
 
         def.associate = models => {
             def.belongsTo(models.user, {as: 'user', foreignKey: 'IdUser'})
-            def.belongsTo(models.user, {as: 'client', foreignKey: 'IdClient'})
+            def.belongsTo(models.client, {as: 'client', foreignKey: 'IdClient'})
         };
 
         return def;
