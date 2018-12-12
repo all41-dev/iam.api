@@ -13,6 +13,7 @@ import {IftOAuth2Server} from "../models/ift-oauth2-server";
 import {ControllerBase} from '@informaticon/base-microservice'
 import * as express from "express";
 import { inspect } from 'util';
+import NodeRSA from 'node-rsa';
 var XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest;
 // import Rand from "csprng";
 
@@ -271,13 +272,23 @@ export class UsersController extends ControllerBase {
         const kid = tokenWithHeader.header.kid;
 
         const certs = JSON.parse(this.httpGet('http://localhost:3000/oauth2/certs'));
-        const keyDef = (certs.keys as [{kid: string, n: string}]).find(k => k.kid === kid);
+        const keyDef = (certs.keys as [{kid: string, n: string, e: string}]).find(k => k.kid === kid);
         if(keyDef === undefined) { return false; }
 
-        const publicKey = keyDef.n;
-        const token = Jwt.verify(jwtString, publicKey);
+        const key = new NodeRSA({ b: 256});
+        key.importKey({
+           n: Buffer.from(keyDef.n, 'base64'),
+           e: Buffer.from(keyDef.e, 'base64')
+        }/*, 'pkcs1-public-pem'*/);
+        const publicKey = key.exportKey('pkcs1-public-pem');
 
-        console.info(token);
+        const token = Jwt.verify(jwtString, publicKey) as {scope: string};
+        if (token === null) {
+            throw new Error('Expected the token to be an Object')
+        }
+
+        const permissionsStr = token.scope;
+
         return false;
     }
 
