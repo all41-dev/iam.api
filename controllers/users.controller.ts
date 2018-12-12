@@ -199,6 +199,14 @@ export class UsersController extends ControllerBase {
     }
 
     public create(req: Request, res: Response, next: NextFunction) {
+        if( !this.hasAccess([
+            'Access/Create',
+            'Microservices/Users/Users'
+        ], req.headers.authorization)) {
+            res.status(403)
+            res.send();
+            return;
+        }
         const entity = new EntityUser();
 
         try {
@@ -288,8 +296,50 @@ export class UsersController extends ControllerBase {
         }
 
         const permissionsStr = token.scope;
+        //concat flatten array of arrays to array
+        const permissions: string[][] = [].concat.apply([], permissionsStr.split(';')
+            .map((p: string) => {
+                // functions for cartesian product, from -> https://stackoverflow.com/a/43053803/1073588
+                const f = (a: any, b: any) => [].concat(...a.map((d: any) => b.map((e: any) => [].concat(d, e))));
+                const cartesian = (a: string[], b?: string[], ...c: string[][]): string[] => (b ? cartesian(f(a, b), ...c) : a);
 
-        return false;
+                const permissionScopes = p.split('+')
+                    .map((scope: string) => {
+                        // process permission scope
+                        if (scope.indexOf('|') === -1) {
+                            return [scope]
+                        }
+                        // the scope path contains '|', then build one scope by combination
+                        const optionsArr = scope.split('/')
+                            .map(slashPart => slashPart.split('|'));
+                        if (optionsArr === undefined){}
+                        const cart =  cartesian(optionsArr[0], ...optionsArr.slice(1)).map((sc: any) => sc.join('/'));
+                        return cart;
+                    });
+                const cart2 = cartesian(permissionScopes[0], ...permissionScopes.slice(1));
+                // console.info(cart2);
+                // console.info('---');
+                return cart2;
+            }));
+        return permissions.some(p => {
+            if (scope.length !== p.length) {  return false; }
+            let localScope: string[] = JSON.parse(JSON.stringify(scope))
+            let matches = 0;
+
+            for(;localScope.length > 0;) {
+                for(let i = 0;i < p.length; i++) {
+                    if (localScope[0].startsWith(p[i])) {
+                        matches++;
+                        //break;
+                    }
+                }
+                localScope = localScope.slice(1);
+            }
+            console.info(p);
+            console.info(scope);
+            console.info(`matches: ${matches} scopes: ${scope.length}`);
+            return matches === scope.length;
+        });
     }
 
     private httpGet(url: string): string

@@ -264,7 +264,7 @@ export class IftOAuth2Server {
                 at_hash: token.accessToken,
                 // jti: nonce,
                 nonce: nonce,
-                scope: 'Access/Read+Microservices/Users;Access+Microservices/Users/Users'
+                scope: 'Access/Read+Microservices/Users;Access+Microservices/Users/Users;Access/Read|Send+Microservices/Users/SetPasswordTokens|Tokens'
             }, '-----BEGIN RSA PRIVATE KEY-----\n' +
                 'MIIEowIBAAKCAQEAsphx6KhpetKXk/oR8vrDxwN8aaLsiBsYNvrWCA9oDcubuDD/\n' +
                 'YLnXH65QnNoRdlOW0+dCAStZVB3VtHR9qyUbqCvS443xC59nDrEHEpTO8+zeHzkk\n' +
