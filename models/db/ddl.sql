@@ -59,3 +59,5 @@ create table SetPasswordTokens
 		foreign key (IdUser) references Users (Id)
 );
 
+INSERT INTO ift_users.Users (Id, Email, Hash, Salt, CreatedAt, UpdatedAt) VALUES (1, 'admin@informaticon.com', '$2b$10$5/zdmxXz0oW7QWZcAZesdOXgasDCnU4vqe2Ure8SMD4WZ6sxOfGFu', '$2b$10$5/zdmxXz0oW7QWZcAZesdO', '2018-11-21 15:55:46', '2018-11-28 14:28:24');
+INSERT INTO ift_users.Clients (Id, ClientId, ClientSecret, Name, CreatedAt, UpdatedAt, RedirectUris, Grants) VALUES (1, '47f3ee72b1856716455dd83b32f1031e.users.devops.informaticon.com', '', 'users.devops.informaticon.com', '2018-12-06 12:30:40', '2018-12-06 09:44:13', null, 'password');
