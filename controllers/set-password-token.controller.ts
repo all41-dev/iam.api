@@ -1,13 +1,11 @@
-import {Router, Request, Response, NextFunction} from "express";
+import {Request, Response, NextFunction} from "express";
 import {UsersApi} from "../users-api";
 import {DbSetPasswordToken} from "../models/db/setPasswordToken";
 import {FindOptions, Model} from "sequelize";
 import {EntitySetPasswordToken} from "../models/db/entity-set-password-token";
 import * as Sequelize from "sequelize";
-import {DbUser} from "../models/db/user";
-import {ControllerBase} from "@informaticon/base-microservice";
+import {ControllerBase} from "@informaticon/devops.base-microservice";
 import * as express from "express";
-import {SetPasswordToken} from "@informaticon/users-model/user";
 
 console.log("registring example routes");
 export class SetPasswordTokenController extends ControllerBase {
@@ -37,6 +35,7 @@ export class SetPasswordTokenController extends ControllerBase {
         server.use(baseUrl, router);
     }
 
+    // noinspection JSMethodCanBeStatic, JSUnusedLocalSymbols
     public getByUser(req: Request, res: Response, next: NextFunction) {
         const options: FindOptions<DbSetPasswordToken> = {};
         const entity = new EntitySetPasswordToken();
@@ -54,6 +53,7 @@ export class SetPasswordTokenController extends ControllerBase {
         entity.doGet(SetPasswordTokenController.getModel(), options, res);
     }
 
+    // noinspection JSUnusedLocalSymbols, JSMethodCanBeStatic
     public create(req: Request, res: Response, next: NextFunction) {
         const entity = new EntitySetPasswordToken();
 
@@ -66,6 +66,7 @@ export class SetPasswordTokenController extends ControllerBase {
 
     }
 
+    // noinspection JSUnusedLocalSymbols, JSMethodCanBeStatic
     public update(req: Request, res: Response, next: NextFunction) {
         const entity = new EntitySetPasswordToken();
         const options: FindOptions<DbSetPasswordToken> = {where: {Id: req.params.id}};
@@ -78,6 +79,7 @@ export class SetPasswordTokenController extends ControllerBase {
         }
     }
 
+    // noinspection JSUnusedLocalSymbols, JSMethodCanBeStatic
     public remove(req: Request, res: Response, next: NextFunction) {
         const entity = new EntitySetPasswordToken();
         const options: FindOptions<DbSetPasswordToken> = {where: {Id: req.params.id}};

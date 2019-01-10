@@ -1,10 +1,9 @@
-import {Entity} from "@informaticon/base-microservice/index";
+import {Entity} from "@informaticon/devops.base-microservice/index";
 import {Request, Response} from "express";
 import {DestroyOptions, FindOptions, Model} from "sequelize";
 import * as Sequelize from "sequelize";
-import * as crypto from "crypto"
 import {DbUser, DbUserInstance} from "./user";
-import {User} from "@informaticon/users-model";
+import {User} from "@informaticon/devops.users-model";
 import {UsersApi} from "../../users-api";
 import {DbSetPasswordToken, DbSetPasswordTokenInstance} from "./setPasswordToken";
 import {EntitySetPasswordToken} from "./entity-set-password-token";
@@ -101,7 +100,7 @@ export class EntityUser extends Entity<DbUser, User> {
     };
 
     public async preDelete(id: number): Promise<number> {
-        const options: DestroyOptions = {where: {IdUser: id}}
+        const options: DestroyOptions = {where: {IdUser: id}};
         return UsersApi.inst.sequelize.models.setPasswordToken.destroy(options);
     }
 

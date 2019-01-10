@@ -1,5 +1,5 @@
 import * as Sequelize from "sequelize";
-import {DbEntity, SequelizeAttributes} from "@informaticon/base-microservice";
+import {DbEntity, SequelizeAttributes} from "@informaticon/devops.base-microservice";
 import {DbAccessToken, DbAccessTokenInstance} from "./access-token";
 
 export class DbClient extends DbEntity {
@@ -35,6 +35,7 @@ export class DbClient extends DbEntity {
             undefined;
     };
 
+    // noinspection JSUnusedGlobalSymbols
     static setGrants = (client: DbClient, grants: string[]): void => {
         client.Grants = grants.join('|');
     }

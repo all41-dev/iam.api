@@ -1,5 +1,5 @@
 import * as Sequelize from "sequelize";
-import {DbEntity, SequelizeAttributes} from "@informaticon/base-microservice";
+import {DbEntity, SequelizeAttributes} from "@informaticon/devops.base-microservice";
 import {DbUser, DbUserInstance} from "./user";
 import {DbClient, DbClientInstance} from "./client";
 
@@ -28,8 +28,8 @@ export class DbAccessToken extends DbEntity {
         const def =  sequelize.define<DbAccessTokenInstance, DbAccessToken>('dbAccessToken', attr, { tableName: "AccessTokens" });
 
         def.associate = models => {
-            def.belongsTo(models.user, {as: 'user', foreignKey: 'IdUser'})
-            def.belongsTo(models.client, {as: 'client', foreignKey: 'IdClient'})
+            def.belongsTo(models.user, {as: 'user', foreignKey: 'IdUser'});
+            def.belongsTo(models.client, {as: 'client', foreignKey: 'IdClient'});
         };
 
         return def;

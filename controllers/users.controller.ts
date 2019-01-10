@@ -1,4 +1,4 @@
-import {Router, Request, Response, NextFunction} from "express";
+import {Request, Response, NextFunction} from "express";
 import {UsersApi} from "../users-api";
 import {DbUser} from "../models/db/user";
 import {FindOptions, Model} from "sequelize";
@@ -8,14 +8,12 @@ import {EntitySetPasswordToken} from "../models/db/entity-set-password-token";
 import {DbSetPasswordToken, DbSetPasswordTokenInstance} from "../models/db/setPasswordToken";
 import * as Bcrypt from "bcrypt"
 import * as Jwt from "jsonwebtoken"
-import {Client, OAuth2Server, Token, Request as OARequest, Response as OAResponse} from "oauth2-server"
+import {OAuth2Server} from "oauth2-server"
 import {IftOAuth2Server} from "../models/ift-oauth2-server";
-import {ControllerBase} from '@informaticon/base-microservice'
+import {ControllerBase} from '@informaticon/devops.base-microservice'
 import * as express from "express";
-import { inspect } from 'util';
 import NodeRSA from 'node-rsa';
-var XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest;
-// import Rand from "csprng";
+let XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest;
 
 export class UsersController extends ControllerBase {
     constructor() {
@@ -98,6 +96,7 @@ export class UsersController extends ControllerBase {
         server.use(baseUrl, router);
     }
 
+    // noinspection JSUnusedLocalSymbols
     public getAll(req: Request, res: Response, next: NextFunction) {
         if( !this.hasAccess([
             'Access/Read',
@@ -117,6 +116,7 @@ export class UsersController extends ControllerBase {
         entity.doGet(UsersController.getModel(), options, res);
     }
 
+    // noinspection JSUnusedLocalSymbols
     public getById(req: Request, res: Response, next: NextFunction) {
         const options: FindOptions<DbUser> = {};
         const entity = new EntityUser();
@@ -134,6 +134,7 @@ export class UsersController extends ControllerBase {
         entity.doGet(UsersController.getModel(), options, res);
     }
 
+    // noinspection JSUnusedLocalSymbols
     public getFromToken(req: Request, res: Response, next: NextFunction) {
         const entity = new EntityUser();
 

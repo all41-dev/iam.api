@@ -1,4 +1,4 @@
-import {ApiBase} from "@informaticon/base-microservice";
+import {ApiBase} from "@informaticon/devops.base-microservice";
 import * as Sequelize from "sequelize";
 import {DbUser} from "./models/db/user";
 import {DbSetPasswordToken} from "./models/db/setPasswordToken";

@@ -1,9 +1,8 @@
-import {Entity} from "@informaticon/base-microservice/index";
+import {Entity} from "@informaticon/devops.base-microservice/index";
 import {Request} from "express";
 import {FindOptions} from "sequelize";
-import {SetPasswordToken} from "@informaticon/users-model";
+import {SetPasswordToken} from "@informaticon/devops.users-model";
 import {DbSetPasswordToken, DbSetPasswordTokenInstance} from "./setPasswordToken";
-import {DbUser} from "./user";
 import {UsersApi} from "../../users-api";
 import * as Sequelize from "sequelize";
 import * as crypto from "crypto";
@@ -64,7 +63,7 @@ export class EntitySetPasswordToken extends Entity<DbSetPasswordToken, SetPasswo
     }
 
     public async preCreation(spt: SetPasswordToken) : Promise<void> {
-        spt.tokenHash = crypto.randomBytes(64).toString('hex')
+        spt.tokenHash = crypto.randomBytes(64).toString('hex');
 
         const dt = new Date();
         dt.setSeconds(dt.getSeconds() + this.tokenDurationSec);

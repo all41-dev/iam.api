@@ -1,5 +1,5 @@
 import {Request, Response, NextFunction} from "express";
-import {ControllerBase} from "@informaticon/base-microservice";
+import {ControllerBase} from "@informaticon/devops.base-microservice";
 import * as express from "express";
 
 export class OAuthController extends ControllerBase {
@@ -27,10 +27,12 @@ export class OAuthController extends ControllerBase {
         server.use(baseUrl, router);
     }
 
+    // noinspection JSUnusedLocalSymbols, JSMethodCanBeStatic
     public index(req: Request, res: Response, next: NextFunction) {
         res.render('index', { title: 'Informaticon OAuth Server' });
     }
 
+    // noinspection JSUnusedLocalSymbols, JSMethodCanBeStatic
     public getConfig(req: Request, res: Response, next: NextFunction) {
         const apiHost = req.protocol + '://' + req.get('host'); // + req.originalUrl;
         const uiHost = 'http://localhost:4201';
@@ -88,6 +90,7 @@ export class OAuthController extends ControllerBase {
         });
     }
 
+    // noinspection JSUnusedLocalSymbols, JSMethodCanBeStatic
     public getCertificates(req: Request, res: Response, next: NextFunction) {
         res.json({
             "keys": [

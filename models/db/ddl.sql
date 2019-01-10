@@ -7,6 +7,8 @@ create table Clients
 	ClientId varchar(80) not null,
 	ClientSecret varchar(80) not null,
 	Name varchar(100) not null,
+	RedirectUris text,
+	Grants text,
 	CreatedAt timestamp default current_timestamp() not null on update current_timestamp(),
 	UpdatedAt timestamp default '0000-00-00 00:00:00' not null,
 	constraint Clients_ClientId_uindex

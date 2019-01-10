@@ -1,5 +1,5 @@
 import * as Sequelize from "sequelize";
-import {DbEntity, SequelizeAttributes} from "@informaticon/base-microservice";
+import {DbEntity, SequelizeAttributes} from "@informaticon/devops.base-microservice";
 import {DbUser, DbUserInstance} from "./user";
 
 export class DbSetPasswordToken extends DbEntity {
