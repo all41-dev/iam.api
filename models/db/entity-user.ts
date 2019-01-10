@@ -86,7 +86,7 @@ export class EntityUser extends Entity<DbUser, User> {
             throw e;
         });
     }
-    public postCreation(user: DbUserInstance) {
+    public async postCreation(user: DbUserInstance) {
         const usr = user.get();
         if (usr.Id === undefined) throw new Error('Db user without Id');
         new EntitySetPasswordToken().createSetPasswordToken(usr.Id, 'create user message -> tbd');

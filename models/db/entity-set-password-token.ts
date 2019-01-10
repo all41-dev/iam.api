@@ -69,7 +69,7 @@ export class EntitySetPasswordToken extends Entity<DbSetPasswordToken, SetPasswo
         dt.setSeconds(dt.getSeconds() + this.tokenDurationSec);
         spt.expires = dt;
     }
-    public postCreation(inst: DbSetPasswordTokenInstance) {
+    public async postCreation(inst: DbSetPasswordTokenInstance) {
         return this.notifyUser(inst);
     }
 
