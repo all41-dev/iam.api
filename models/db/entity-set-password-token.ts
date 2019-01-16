@@ -22,7 +22,7 @@ export class EntitySetPasswordToken extends Entity<DbSetPasswordToken, SetPasswo
     }
 
     // noinspection JSMethodCanBeStatic
-    public dbToClient(inst: DbSetPasswordTokenInstance): SetPasswordToken {
+    public async dbToClient(inst: DbSetPasswordTokenInstance): Promise<SetPasswordToken> {
         const dbObj = inst.get();
         return new SetPasswordToken(
             dbObj.Id,

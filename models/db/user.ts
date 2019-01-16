@@ -1,4 +1,19 @@
-import * as Sequelize from "sequelize";
+import {
+    Sequelize,
+    Instance,
+    Model,
+    INTEGER,
+    STRING,
+    HasManyGetAssociationsMixin,
+    HasManySetAssociationsMixin,
+    HasManyAddAssociationsMixin,
+    HasManyAddAssociationMixin,
+    HasManyCreateAssociationMixin,
+    HasManyRemoveAssociationMixin,
+    HasManyRemoveAssociationsMixin,
+    HasManyHasAssociationMixin,
+    HasManyHasAssociationsMixin, HasManyCountAssociationsMixin
+} from "sequelize";
 import {DbEntity, SequelizeAttributes} from "@informaticon/devops.base-microservice";
 import {DbSetPasswordToken, DbSetPasswordTokenInstance} from "./setPasswordToken";
 import {DbAccessToken, DbAccessTokenInstance} from "./access-token";
@@ -11,12 +26,12 @@ export class DbUser extends DbEntity {
     public setPasswordTokens?: DbSetPasswordToken[] | DbSetPasswordToken['Id'][];
     public accessTokens?: DbAccessToken[] | DbAccessToken['Id'][];
 
-    static factory = (sequelize: Sequelize.Sequelize): Sequelize.Model<DbUserInstance, DbUser> => {
+    static factory = (sequelize: Sequelize): Model<DbUserInstance, DbUser> => {
         const attr: SequelizeAttributes<DbUser> = {
-            Id : { type: Sequelize.INTEGER, autoIncrement: true, primaryKey: true },
-            Email : { type: Sequelize.STRING, },
-            Hash : { type: Sequelize.STRING, },
-            Salt : { type: Sequelize.STRING, }
+            Id : { type: INTEGER, autoIncrement: true, primaryKey: true },
+            Email : { type: STRING, },
+            Hash : { type: STRING, },
+            Salt : { type: STRING, }
         };
         const def = sequelize.define<DbUserInstance, DbUser>('user', attr, { tableName: "Users" });
 
@@ -25,30 +40,30 @@ export class DbUser extends DbEntity {
             def.hasMany(models.accessToken, {as: 'accessTokens', foreignKey: 'IdUser'});
         };
 
-        return def;
+        return def as any;
     };
 }
 
-export interface DbUserInstance extends Sequelize.Instance<DbUser>, DbUser {
-    getSetPasswordTokens: Sequelize.HasManyGetAssociationsMixin<DbSetPasswordTokenInstance>;
-    setSetPasswordTokens: Sequelize.HasManySetAssociationsMixin<DbSetPasswordTokenInstance, DbSetPasswordTokenInstance['Id']>;
-    addSetPasswordTokens: Sequelize.HasManyAddAssociationsMixin<DbSetPasswordTokenInstance, DbSetPasswordTokenInstance['Id']>;
-    addSetPasswordToken: Sequelize.HasManyAddAssociationMixin<DbSetPasswordTokenInstance, DbSetPasswordTokenInstance['Id']>;
-    createSetPasswordToken: Sequelize.HasManyCreateAssociationMixin<DbSetPasswordToken, DbSetPasswordTokenInstance>;
-    removeSetPasswordToken: Sequelize.HasManyRemoveAssociationMixin<DbSetPasswordTokenInstance, DbSetPasswordTokenInstance['Id']>;
-    removeSetPasswordTokens: Sequelize.HasManyRemoveAssociationsMixin<DbSetPasswordTokenInstance, DbSetPasswordTokenInstance['Id']>;
-    hasSetPasswordToken: Sequelize.HasManyHasAssociationMixin<DbSetPasswordTokenInstance, DbSetPasswordTokenInstance['Id']>;
-    hasSetPasswordTokens: Sequelize.HasManyHasAssociationsMixin<DbSetPasswordTokenInstance, DbSetPasswordTokenInstance['Id']>;
-    countSetPasswordTokens: Sequelize.HasManyCountAssociationsMixin;
+export interface DbUserInstance extends Instance<DbUser>, DbUser {
+    getSetPasswordTokens: HasManyGetAssociationsMixin<DbSetPasswordTokenInstance>;
+    setSetPasswordTokens: HasManySetAssociationsMixin<DbSetPasswordTokenInstance, DbSetPasswordTokenInstance['Id']>;
+    addSetPasswordTokens: HasManyAddAssociationsMixin<DbSetPasswordTokenInstance, DbSetPasswordTokenInstance['Id']>;
+    addSetPasswordToken: HasManyAddAssociationMixin<DbSetPasswordTokenInstance, DbSetPasswordTokenInstance['Id']>;
+    createSetPasswordToken: HasManyCreateAssociationMixin<DbSetPasswordToken, DbSetPasswordTokenInstance>;
+    removeSetPasswordToken: HasManyRemoveAssociationMixin<DbSetPasswordTokenInstance, DbSetPasswordTokenInstance['Id']>;
+    removeSetPasswordTokens: HasManyRemoveAssociationsMixin<DbSetPasswordTokenInstance, DbSetPasswordTokenInstance['Id']>;
+    hasSetPasswordToken: HasManyHasAssociationMixin<DbSetPasswordTokenInstance, DbSetPasswordTokenInstance['Id']>;
+    hasSetPasswordTokens: HasManyHasAssociationsMixin<DbSetPasswordTokenInstance, DbSetPasswordTokenInstance['Id']>;
+    countSetPasswordTokens: HasManyCountAssociationsMixin;
 
-    getAccessTokens: Sequelize.HasManyGetAssociationsMixin<DbAccessTokenInstance>;
-    setAccessTokens: Sequelize.HasManySetAssociationsMixin<DbAccessTokenInstance, DbAccessTokenInstance['Id']>;
-    addAccessTokens: Sequelize.HasManyAddAssociationsMixin<DbAccessTokenInstance, DbAccessTokenInstance['Id']>;
-    addAccessToken: Sequelize.HasManyAddAssociationMixin<DbAccessTokenInstance, DbAccessTokenInstance['Id']>;
-    createAccessToken: Sequelize.HasManyCreateAssociationMixin<DbAccessToken, DbAccessTokenInstance>;
-    removeAccessToken: Sequelize.HasManyRemoveAssociationMixin<DbAccessTokenInstance, DbAccessTokenInstance['Id']>;
-    removeAccessTokens: Sequelize.HasManyRemoveAssociationsMixin<DbAccessTokenInstance, DbAccessTokenInstance['Id']>;
-    hasAccessToken: Sequelize.HasManyHasAssociationMixin<DbAccessTokenInstance, DbAccessTokenInstance['Id']>;
-    hasAccessTokens: Sequelize.HasManyHasAssociationsMixin<DbAccessTokenInstance, DbAccessTokenInstance['Id']>;
-    countAccessTokens: Sequelize.HasManyCountAssociationsMixin;
+    getAccessTokens: HasManyGetAssociationsMixin<DbAccessTokenInstance>;
+    setAccessTokens: HasManySetAssociationsMixin<DbAccessTokenInstance, DbAccessTokenInstance['Id']>;
+    addAccessTokens: HasManyAddAssociationsMixin<DbAccessTokenInstance, DbAccessTokenInstance['Id']>;
+    addAccessToken: HasManyAddAssociationMixin<DbAccessTokenInstance, DbAccessTokenInstance['Id']>;
+    createAccessToken: HasManyCreateAssociationMixin<DbAccessToken, DbAccessTokenInstance>;
+    removeAccessToken: HasManyRemoveAssociationMixin<DbAccessTokenInstance, DbAccessTokenInstance['Id']>;
+    removeAccessTokens: HasManyRemoveAssociationsMixin<DbAccessTokenInstance, DbAccessTokenInstance['Id']>;
+    hasAccessToken: HasManyHasAssociationMixin<DbAccessTokenInstance, DbAccessTokenInstance['Id']>;
+    hasAccessTokens: HasManyHasAssociationsMixin<DbAccessTokenInstance, DbAccessTokenInstance['Id']>;
+    countAccessTokens: HasManyCountAssociationsMixin;
 }

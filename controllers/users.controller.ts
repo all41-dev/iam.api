@@ -1,9 +1,8 @@
-import {Request, Response, NextFunction} from "express";
+import {Request, Response, NextFunction, Router, Application} from "express";
 import {UsersApi} from "../users-api";
 import {DbUser} from "../models/db/user";
-import {FindOptions, Model} from "sequelize";
+import {FindOptions, Model, Instance} from "sequelize";
 import {EntityUser} from "../models/db/entity-user";
-import * as Sequelize from "sequelize";
 import {EntitySetPasswordToken} from "../models/db/entity-set-password-token";
 import {DbSetPasswordToken, DbSetPasswordTokenInstance} from "../models/db/setPasswordToken";
 import * as Bcrypt from "bcrypt"
@@ -11,7 +10,6 @@ import * as Jwt from "jsonwebtoken"
 import {OAuth2Server} from "oauth2-server"
 import {IftOAuth2Server} from "../models/ift-oauth2-server";
 import {ControllerBase} from '@informaticon/devops.base-microservice'
-import * as express from "express";
 import NodeRSA from 'node-rsa';
 let XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest;
 
@@ -20,9 +18,9 @@ export class UsersController extends ControllerBase {
         super();
     }
 
-    public static create(baseUrl: string, server: express.Application) {
-        let router: express.Router;
-        router = express.Router();
+    public static create(baseUrl: string, server: Application) {
+        let router: Router;
+        router = Router();
 
         router.get('/', (req: Request, res: Response, next: NextFunction) => {
             new UsersController().getAll(req, res, next);
@@ -150,7 +148,7 @@ export class UsersController extends ControllerBase {
         };
 
         const setPasswordTokenModel = UsersApi.inst.sequelize.models.setPasswordToken as
-            Model<Sequelize.Instance<DbSetPasswordToken>, DbSetPasswordToken>;
+            Model<Instance<DbSetPasswordToken>, DbSetPasswordToken>;
 
         entity.doGetFromToken(setPasswordTokenModel, options, res);
     }
@@ -169,9 +167,9 @@ export class UsersController extends ControllerBase {
 
     public changePassword(req: Request, res: Response, next: NextFunction) {
         const tokenModel = UsersApi.inst.sequelize.models.setPasswordToken as
-            Model<Sequelize.Instance<DbSetPasswordToken>, DbSetPasswordToken>;
+            Model<Instance<DbSetPasswordToken>, DbSetPasswordToken>;
         const userModel = UsersApi.inst.sequelize.models.user as
-            Model<Sequelize.Instance<DbUser>, DbUser>;
+            Model<Instance<DbUser>, DbUser>;
 
         const token = req.params.token;
         tokenModel.sync().then(async () => {
@@ -180,7 +178,7 @@ export class UsersController extends ControllerBase {
                     TokenHash: token
                 }
             };
-            tokenModel.find(options).then(async (spt: Sequelize.Instance<DbSetPasswordToken>|null) => {
+            tokenModel.find(options).then(async (spt: Instance<DbSetPasswordToken>|null) => {
                 const inst = spt as DbSetPasswordTokenInstance;
                 return inst.getUser().then(async (user) => {
                     if (user === null) throw new Error('user id null');
@@ -266,8 +264,8 @@ export class UsersController extends ControllerBase {
         });
     }
 
-    public static getModel(): Model<Sequelize.Instance<DbUser>, DbUser> {
-        return UsersApi.inst.sequelize.models.user as Model<Sequelize.Instance<DbUser>, DbUser>;
+    public static getModel(): Model<Instance<DbUser>, DbUser> {
+        return UsersApi.inst.sequelize.models.user as Model<Instance<DbUser>, DbUser>;
     }
 
     private hasAccess(scope: string[], authorizationHeader: string|undefined): boolean {
@@ -343,8 +341,7 @@ export class UsersController extends ControllerBase {
         });
     }
 
-    private httpGet(url: string): string
-    {
+    private httpGet(url: string): string {
         if(url === 'http://localhost:3000/oauth2/certs'){
             //server calling himself causes a freeze
             return '{\n' +

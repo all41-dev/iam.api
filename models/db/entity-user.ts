@@ -1,7 +1,6 @@
 import {Entity} from "@informaticon/devops.base-microservice/index";
 import {Request, Response} from "express";
-import {DestroyOptions, FindOptions, Model} from "sequelize";
-import * as Sequelize from "sequelize";
+import {DestroyOptions, FindOptions, Instance, Model} from "sequelize";
 import {DbUser, DbUserInstance} from "./user";
 import {User} from "@informaticon/devops.users-model";
 import {UsersApi} from "../../users-api";
@@ -20,7 +19,7 @@ export class EntityUser extends Entity<DbUser, User> {
     }
 
     // noinspection JSMethodCanBeStatic
-    public dbToClient(dbInst: DbUserInstance): User {
+    public async dbToClient(dbInst: DbUserInstance): Promise<User> {
         const dbObj = dbInst.get();
         return new User(
             dbObj.Id,
@@ -105,10 +104,10 @@ export class EntityUser extends Entity<DbUser, User> {
     }
 
     public doGetFromToken(
-        model: Model<Sequelize.Instance<DbSetPasswordToken>, DbSetPasswordToken>,
+        model: Model<Instance<DbSetPasswordToken>, DbSetPasswordToken>,
         options: FindOptions<DbSetPasswordToken>, res: Response) {
 
-        model.find(options).then((spt: Sequelize.Instance<DbSetPasswordToken>|null) => {
+        model.find(options).then((spt: Instance<DbSetPasswordToken>|null) => {
             const token = spt as DbSetPasswordTokenInstance;
             if(token === null) {
                 res.json("The provided token is not valid.")
