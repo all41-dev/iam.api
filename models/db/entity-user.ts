@@ -70,7 +70,7 @@ export class EntityUser extends Entity<DbUser, User> {
         return UsersApi.inst.sequelize.models.user.count(options).then((nb: number) => nb > 0);
     }
 
-    public async preCreation(user: User) : Promise<void> {
+    public async preCreation(user: User) : Promise<User> {
         if (!EntityUser.emailIsValid(user.email)) {
             throw new Error(`The email address ${user.email} is not valid. Creation has been canceled`);
         }
@@ -84,18 +84,21 @@ export class EntityUser extends Entity<DbUser, User> {
         }).catch((e) => {
             throw e;
         });
+        return user;
     }
-    public async postCreation(user: DbUserInstance) {
+    public async postCreation(user: DbUserInstance): Promise<DbUserInstance> {
         const usr = user.get();
         if (usr.Id === undefined) throw new Error('Db user without Id');
         new EntitySetPasswordToken().createSetPasswordToken(usr.Id, 'create user message -> tbd');
+        return user;
     }
 
-    public async preUpdate(user: User) : Promise<void> {
+    public async preUpdate(user: User) : Promise<User> {
         console.info(user);
         if (!EntityUser.emailIsValid(user.email)) {
             throw new Error(`The email address ${user.email} is not valid. Update has been canceled`);
         }
+        return user;
     };
 
     public async preDelete(id: number): Promise<number> {

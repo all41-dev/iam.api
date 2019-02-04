@@ -62,22 +62,25 @@ export class EntitySetPasswordToken extends Entity<DbSetPasswordToken, SetPasswo
         return obj;
     }
 
-    public async preCreation(spt: SetPasswordToken) : Promise<void> {
+    public async preCreation(spt: SetPasswordToken) : Promise<SetPasswordToken> {
         spt.tokenHash = crypto.randomBytes(64).toString('hex');
 
         const dt = new Date();
         dt.setSeconds(dt.getSeconds() + this.tokenDurationSec);
         spt.expires = dt;
+        return spt;
     }
-    public async postCreation(inst: DbSetPasswordTokenInstance) {
-        return this.notifyUser(inst);
+    public async postCreation(inst: DbSetPasswordTokenInstance): Promise<DbSetPasswordTokenInstance> {
+        await this.notifyUser(inst);
+        return inst;
     }
 
-    public async preUpdate(user: SetPasswordToken) : Promise<void> {
+    public async preUpdate(user: SetPasswordToken) : Promise<SetPasswordToken> {
         // console.info(user);
         // if (!EntityUser.emailIsValid(user.email)) {
         //     throw new Error(`The email address ${user.email} is not valid. Update has been canceled`);
         // }
+        return user;
     };
 
     public async preDelete(id: number): Promise<number> {
@@ -112,7 +115,7 @@ export class EntitySetPasswordToken extends Entity<DbSetPasswordToken, SetPasswo
                     } else
                     {
                         if(userId === undefined) {
-                            throw new Error();
+                            throw new Error('userId is missing');
                         }
 
                         const dt = new Date();
@@ -136,11 +139,22 @@ export class EntitySetPasswordToken extends Entity<DbSetPasswordToken, SetPasswo
         if (user === null)
             throw new Error('user not found from setPasswordToken');
 
+        // const smtp = NodeMailer.createTransport({
+        //     port: 465,//587,
+        //     host: 'smtp-relay.gmail.com',
+        //     secure: true,
+        // });
+        // For execution outside of Informaticon's network
         const smtp = NodeMailer.createTransport({
-            port: 465,//587,
-            host: 'smtp-relay.gmail.com',
-            secure: true,
+            port: 587,
+            host: 'mail.infomaniak.com',
+            secure: false,
+            auth: {
+                user: 'app@harps.ch',
+                pass: 'xdqFyu0CH5VB'
+            }
         });
+
         return smtp.sendMail({
             from: 'user-management@informaticon.com',
             to: user.Email,

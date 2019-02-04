@@ -4,7 +4,7 @@ import {
     INTEGER,
     STRING,
     BelongsToGetAssociationMixin,
-    BelongsToSetAssociationMixin, BelongsToCreateAssociationMixin, Sequelize
+    BelongsToSetAssociationMixin, BelongsToCreateAssociationMixin, Sequelize, DATE
 } from "sequelize";
 import {DbEntity, SequelizeAttributes} from "@informaticon/devops.base-microservice";
 import {DbUser, DbUserInstance} from "./user";
@@ -26,7 +26,7 @@ export class DbSetPasswordToken extends DbEntity {
             Id : { type: INTEGER, autoIncrement: true, primaryKey: true},
             IdUser : { type: INTEGER, },
             Message : { type: STRING, },
-            Expires : { type: STRING, },// todo refactor type
+            Expires : { type: DATE, },// todo refactor type
             TokenHash: { type: STRING, }
         };
         const def = sequelize.define<DbSetPasswordTokenInstance, DbSetPasswordToken>('dbSetPasswordToken', attr, { tableName: "SetPasswordTokens" });
