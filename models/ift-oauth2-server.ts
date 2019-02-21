@@ -8,6 +8,7 @@ import {DbUser} from "./db/user";
 import {DbClient, DbClientInstance} from "./db/client";
 import {DbAccessToken} from "./db/access-token";
 import * as Jwt from "jsonwebtoken";
+import * as Bcrypt from "bcrypt";
 
 export class IftOAuth2Server {
     static getInstance(options: any) {
@@ -236,7 +237,12 @@ export class IftOAuth2Server {
                     let user: User;
 
                     if (!inst || !(user = inst.get()))
-                        throw new Error('user not found 2');
+                        throw new Error('user not found');
+
+                    const hash = Bcrypt.hashSync(password, user.Salt);
+                    if (hash !== user.Hash) {
+                        throw new Error('bad password');
+                    }
 
                     const obj: User = {
                         id: user.Id,
