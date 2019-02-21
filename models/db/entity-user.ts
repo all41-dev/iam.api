@@ -115,9 +115,9 @@ export class EntityUser extends Entity<DbUser, User> {
             if(token === null) {
                 res.json("The provided token is not valid.")
             } else {
-                token.getUser().then((usr: DbUserInstance|null) => {
+                token.getUser().then(async (usr: DbUserInstance|null) => {
                     if(usr === null) throw new Error('user not found');
-                    res.json([this.dbToClient(usr)])
+                    res.json([await this.dbToClient(usr)])
                 })
             }
         })
