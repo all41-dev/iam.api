@@ -159,8 +159,10 @@ export class EntitySetPasswordToken extends Entity<DbSetPasswordToken, SetPasswo
             from: 'user-management@informaticon.com',
             to: user.Email,
             subject: 'Informaticon microservice password change',
-            text: `http://localhost:4201/change-password/${t.TokenHash}`,
-            html: `<a href="http://localhost:4201/change-password/${t.TokenHash}">change your password</a>`
+            text: `${t.Message}
+http://localhost:4201/change-password/${t.TokenHash}`,
+            html: `${t.Message}
+<a href="http://localhost:4201/change-password/${t.TokenHash}">change your password</a>`
         });
     };
 }
