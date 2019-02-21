@@ -26,7 +26,7 @@ export class DbSetPasswordToken extends DbEntity {
             Id : { type: INTEGER, autoIncrement: true, primaryKey: true},
             IdUser : { type: INTEGER, },
             Message : { type: STRING, },
-            Expires : { type: DATE, },// todo refactor type
+            Expires : { type: DATE, },
             TokenHash: { type: STRING, }
         };
         const def = sequelize.define<DbSetPasswordTokenInstance, DbSetPasswordToken>('dbSetPasswordToken', attr, { tableName: "SetPasswordTokens" });
