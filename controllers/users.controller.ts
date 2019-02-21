@@ -183,7 +183,6 @@ export class UsersController extends ControllerBase {
                 return inst.getUser().then(async (user) => {
                     if (user === null) throw new Error('user id null');
 
-                    console.info('password: ' + req.body.password);
                     const salt = Bcrypt.genSaltSync(10);
                     const hash = Bcrypt.hashSync(req.body.password, salt);
                     user.update({
@@ -191,7 +190,10 @@ export class UsersController extends ControllerBase {
                         Hash: hash
                     }).then((updatedUser) => {
                         if (spt === null) throw new Error('setPasswordToken is null')
-                        spt.destroy().then(() => res.json())
+                        spt.destroy().then(() => {
+                            const eu = new EntityUser();
+                            res.json(eu.dbToClient(user));
+                        })
                     })
                 })});
         });
