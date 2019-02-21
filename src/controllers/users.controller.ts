@@ -1,10 +1,10 @@
 import {Request, Response, NextFunction, Router, Application} from "express";
-import {UsersApi} from "../users-api";
-import {DbUser} from "../models/db/user";
+import {Api} from "../api";
+import {DbUser} from "../models/db/db-user";
 import {FindOptions, Model, Instance} from "sequelize";
-import {EntityUser} from "../models/db/entity-user";
-import {EntitySetPasswordToken} from "../models/db/entity-set-password-token";
-import {DbSetPasswordToken, DbSetPasswordTokenInstance} from "../models/db/setPasswordToken";
+import {EntityUser} from "../models/business/entity-user";
+import {EntitySetPasswordToken} from "../models/business/entity-set-password-token";
+import {DbSetPasswordToken, DbSetPasswordTokenInstance} from "../models/db/db-set-password-token";
 import * as Bcrypt from "bcrypt"
 import * as Jwt from "jsonwebtoken"
 import {OAuth2Server} from "oauth2-server"
@@ -147,15 +147,15 @@ export class UsersController extends ControllerBase {
             }
         };
 
-        const setPasswordTokenModel = UsersApi.inst.sequelize.models.setPasswordToken as
+        const setPasswordTokenModel = Api.inst.sequelize.models.setPasswordToken as
             Model<Instance<DbSetPasswordToken>, DbSetPasswordToken>;
 
         entity.doGetFromToken(setPasswordTokenModel, options, res);
     }
 
     public authenticate(req: Request, res: Response, next: NextFunction) {
-        UsersApi.inst.req = req;
-        UsersApi.inst.res = res;
+        Api.inst.req = req;
+        Api.inst.res = res;
 
         const oauthSrv = IftOAuth2Server.getInstance({
             requireClientAuthentication: {password: false},
@@ -166,9 +166,9 @@ export class UsersController extends ControllerBase {
     }
 
     public changePassword(req: Request, res: Response, next: NextFunction) {
-        const tokenModel = UsersApi.inst.sequelize.models.setPasswordToken as
+        const tokenModel = Api.inst.sequelize.models.setPasswordToken as
             Model<Instance<DbSetPasswordToken>, DbSetPasswordToken>;
-        const userModel = UsersApi.inst.sequelize.models.user as
+        const userModel = Api.inst.sequelize.models.user as
             Model<Instance<DbUser>, DbUser>;
 
         const token = req.params.token;
@@ -242,7 +242,7 @@ export class UsersController extends ControllerBase {
         }
     }
 
-    public lostPassword(req: Request, res: Response, next: NextFunction) {
+    public async lostPassword(req: Request, res: Response, next: NextFunction) {
         const email: string =  req.body.email.toLowerCase();
 
         if (!EntityUser.emailIsValid(email)) {
@@ -250,13 +250,13 @@ export class UsersController extends ControllerBase {
             res.send({message: `The email address ${email} is not valid. The request has been canceled`});
             return;
         }
-        if (!EntityUser.userExists(email)){
+        if (!await EntityUser.userExists(email)){
             res.statusCode = 409;
             res.send({message: `The user ${email} already exists. The request has been canceled.`});
             return;
         }
 
-        UsersApi.inst.sequelize.models.user.find({where: {
+        Api.inst.sequelize.models.user.find({where: {
                 email: email
             }}).then((user: DbUser[]) => {
                 if (user.length === 0 || user[0].Id === undefined)
@@ -267,7 +267,7 @@ export class UsersController extends ControllerBase {
     }
 
     public static getModel(): Model<Instance<DbUser>, DbUser> {
-        return UsersApi.inst.sequelize.models.user as Model<Instance<DbUser>, DbUser>;
+        return Api.inst.sequelize.models.user as Model<Instance<DbUser>, DbUser>;
     }
 
     private hasAccess(scope: string[], authorizationHeader: string|undefined): boolean {

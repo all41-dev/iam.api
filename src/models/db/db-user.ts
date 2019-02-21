@@ -15,8 +15,8 @@ import {
     HasManyHasAssociationsMixin, HasManyCountAssociationsMixin
 } from "sequelize";
 import {DbEntity, SequelizeAttributes} from "@informaticon/devops.base-microservice";
-import {DbSetPasswordToken, DbSetPasswordTokenInstance} from "./setPasswordToken";
-import {DbAccessToken, DbAccessTokenInstance} from "./access-token";
+import {DbSetPasswordToken, DbSetPasswordTokenInstance} from "./db-set-password-token";
+import {DbAccessToken, DbAccessTokenInstance} from "./db-access-token";
 
 export class DbUser extends DbEntity {
     Email: string | undefined;

@@ -1,6 +1,6 @@
 import * as Sequelize from "sequelize";
 import {DbEntity, SequelizeAttributes} from "@informaticon/devops.base-microservice";
-import {DbAccessToken, DbAccessTokenInstance} from "./access-token";
+import {DbAccessToken, DbAccessTokenInstance} from "./db-access-token";
 
 export class DbClient extends DbEntity {
     ClientId!: string;

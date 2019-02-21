@@ -1,11 +1,12 @@
 import {Entity} from "@informaticon/devops.base-microservice/index";
 import {Request, Response} from "express";
 import {DestroyOptions, FindOptions, Instance, Model} from "sequelize";
-import {DbUser, DbUserInstance} from "./user";
-import {User} from "@informaticon/devops.users-model";
-import {UsersApi} from "../../users-api";
-import {DbSetPasswordToken, DbSetPasswordTokenInstance} from "./setPasswordToken";
+import {DbUser, DbUserInstance} from "../db/db-user";
+import {User} from "@informaticon/devops.identity-model";
+import {Api} from "../../api";
+import {DbSetPasswordToken, DbSetPasswordTokenInstance} from "../db/db-set-password-token";
 import {EntitySetPasswordToken} from "./entity-set-password-token";
+import Bluebird = require("bluebird");
 
 export class EntityUser extends Entity<DbUser, User> {
     // noinspection JSMethodCanBeStatic
@@ -13,7 +14,7 @@ export class EntityUser extends Entity<DbUser, User> {
         const filter: string | undefined = req.query.filter;
         if (filter !== undefined) {
             options.where = {
-                Email: {[UsersApi.inst.sequelize.Op.like]: `%${filter}%`}
+                Email: {[Api.inst.sequelize.Op.like]: `%${filter}%`}
             }
         }
     }
@@ -59,7 +60,7 @@ export class EntityUser extends Entity<DbUser, User> {
         return email === undefined ? false : re.test(email);
     };
 
-    public static userExists(email: string | undefined) {
+    public static userExists(email: string | undefined): Bluebird<boolean> {
         if(email === undefined){
             throw new Error("No email address provided (undefined)");
         }
@@ -67,7 +68,7 @@ export class EntityUser extends Entity<DbUser, User> {
                 email: email
             }};
 
-        return UsersApi.inst.sequelize.models.user.count(options).then((nb: number) => nb > 0);
+        return Api.inst.sequelize.models.user.count(options).then((nb: number) => nb > 0);
     }
 
     public async preCreation(user: User) : Promise<User> {
@@ -103,7 +104,7 @@ export class EntityUser extends Entity<DbUser, User> {
 
     public async preDelete(id: number): Promise<number> {
         const options: DestroyOptions = {where: {IdUser: id}};
-        return UsersApi.inst.sequelize.models.setPasswordToken.destroy(options);
+        return Api.inst.sequelize.models.setPasswordToken.destroy(options);
     }
 
     public doGetFromToken(

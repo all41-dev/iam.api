@@ -1,9 +1,9 @@
 import {Entity} from "@informaticon/devops.base-microservice/index";
 import {Request} from "express";
 import {FindOptions} from "sequelize";
-import {SetPasswordToken} from "@informaticon/devops.users-model";
-import {DbSetPasswordToken, DbSetPasswordTokenInstance} from "./setPasswordToken";
-import {UsersApi} from "../../users-api";
+import {SetPasswordToken} from "@informaticon/devops.identity-model";
+import {DbSetPasswordToken, DbSetPasswordTokenInstance} from "../db/db-set-password-token";
+import {Api} from "../../api";
 import * as Sequelize from "sequelize";
 import * as crypto from "crypto";
 import * as NodeMailer from "nodemailer"
@@ -97,7 +97,7 @@ export class EntitySetPasswordToken extends Entity<DbSetPasswordToken, SetPasswo
      * Wording of the email will change whether the token is for a new user or a lost password
      */
     createSetPasswordToken = (userId: number, message: string) => {
-        UsersApi.inst.sequelize.models.setPasswordToken.findAll({ where: {expires: { [Sequelize.Op.lt]: new Date()} }})
+        Api.inst.sequelize.models.setPasswordToken.findAll({ where: {expires: { [Sequelize.Op.lt]: new Date()} }})
             .then((spts: any) => {
                 // delete expired tokens for all users
                 for (let spt of spts){
@@ -109,7 +109,7 @@ export class EntitySetPasswordToken extends Entity<DbSetPasswordToken, SetPasswo
                 //    user.setPasswordTokens = [];
                 //}
 
-                UsersApi.inst.sequelize.models.setPasswordToken.findAll({where: { idUser: userId}}).then( (spt: DbSetPasswordToken[])  => {
+                Api.inst.sequelize.models.setPasswordToken.findAll({where: { idUser: userId}}).then( (spt: DbSetPasswordToken[])  => {
                     if(spt !== null && spt !== undefined && spt.length > 0) {
                         token = spt[0];
                     } else
@@ -129,7 +129,7 @@ export class EntitySetPasswordToken extends Entity<DbSetPasswordToken, SetPasswo
                         };
                     }
 
-                    UsersApi.inst.sequelize.models.setPasswordToken.create(token).then((t) => this.notifyUser(t));
+                    Api.inst.sequelize.models.setPasswordToken.create(token).then((t) => this.notifyUser(t));
                 })
             });
     };

@@ -7,7 +7,7 @@ import {
     BelongsToSetAssociationMixin, BelongsToCreateAssociationMixin, Sequelize, DATE
 } from "sequelize";
 import {DbEntity, SequelizeAttributes} from "@informaticon/devops.base-microservice";
-import {DbUser, DbUserInstance} from "./user";
+import {DbUser, DbUserInstance} from "./db-user";
 
 export class DbSetPasswordToken extends DbEntity {
     //@ForeignKey(() => DbUser)

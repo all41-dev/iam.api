@@ -1,12 +1,11 @@
 import ExpressOAuthServer = require("express-oauth-server");
-import {AuthorizationCode, Callback, Client, Falsey, ServerOptions, Token, User} from "oauth2-server";
+import {AuthorizationCode, Client, Falsey, Token, User} from "oauth2-server";
 import {UsersController} from "../controllers/users.controller";
-import {UsersApi} from "../users-api";
+import {Api} from "../api";
 import {Model} from "sequelize";
 import * as Sequelize from "sequelize";
-import {DbUser} from "./db/user";
-import {DbClient, DbClientInstance} from "./db/client";
-import {DbAccessToken} from "./db/access-token";
+import {DbClient} from "./db/db-client";
+import {DbAccessToken} from "./db/db-access-token";
 import * as Jwt from "jsonwebtoken";
 import * as Bcrypt from "bcrypt";
 
@@ -17,14 +16,14 @@ export class IftOAuth2Server {
             getAccessToken: (accessToken: string): any => {
                 console.info('In getAccessToken OAuth method');
 
-                const model = UsersApi.inst.sequelize.models.accessToken as
+                const model = Api.inst.sequelize.models.accessToken as
                     Model<Sequelize.Instance<DbAccessToken>, DbAccessToken>;
 
                 const resp = model.findOne({
                     where: {
                         TokenValue: accessToken,
                     },
-                    include: [ UsersApi.inst.sequelize.models.client, UsersApi.inst.sequelize.models.user ]
+                    include: [ Api.inst.sequelize.models.client, Api.inst.sequelize.models.user ]
                 }).then((inst: Sequelize.Instance<DbAccessToken>|null) => {
                     let token: DbAccessToken;
 
@@ -48,7 +47,7 @@ export class IftOAuth2Server {
             getClient: (clientId: string, clientSecret: string): Promise<Client|Falsey>|any => {
                 console.info('In getClient OAuth method');
 
-                const model = UsersApi.inst.sequelize.models.client as
+                const model = Api.inst.sequelize.models.client as
                     Model<Sequelize.Instance<DbClient>, DbClient>;
 
                 const resp = model.findOne({
@@ -89,19 +88,19 @@ export class IftOAuth2Server {
             },
             saveToken: (token: Token, client: Client, user: User): any => {
                 console.info('In saveToken OAuth method');
-                const model = UsersApi.inst.sequelize.models.accessToken as
+                const model = Api.inst.sequelize.models.accessToken as
                     Model<Sequelize.Instance<DbAccessToken>, DbAccessToken>;
                 const resp = model.findOne({
                     where: {
                         TokenValue: token.accessToken,
                     },
-                    include: [ { model: UsersApi.inst.sequelize.models.client, as: 'client'},
-                        { model: UsersApi.inst.sequelize.models.user, as: 'user'} ]
+                    include: [ { model: Api.inst.sequelize.models.client, as: 'client'},
+                        { model: Api.inst.sequelize.models.user, as: 'user'} ]
                 }).then(async (inst: Sequelize.Instance<DbAccessToken>|null) => {
                     let t: DbAccessToken;
 
                     if (!inst || !(t = inst.get())) {
-                        const clientModel = UsersApi.inst.sequelize.models.client as
+                        const clientModel = Api.inst.sequelize.models.client as
                             Model<Sequelize.Instance<DbClient>, DbClient>;
 
                         const dbClientInst = await clientModel.findOne({
@@ -140,10 +139,10 @@ export class IftOAuth2Server {
                         User: user,
                         id_token: undefined
                     };
-                    if (UsersApi.inst.req === undefined || UsersApi.inst.req.body.nonce === undefined)
+                    if (Api.inst.req === undefined || Api.inst.req.body.nonce === undefined)
                         throw new Error('request or nonce value is not defined');
 
-                    obj.id_token = IftOAuth2Server.getIdToken(obj, UsersApi.inst.req.body.nonce);
+                    obj.id_token = IftOAuth2Server.getIdToken(obj, Api.inst.req.body.nonce);
 
                     return obj;
                 });// .catch(() => {console.info('error (harps)')});

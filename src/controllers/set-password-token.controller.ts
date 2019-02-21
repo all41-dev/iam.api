@@ -1,8 +1,8 @@
 import {Request, Response, NextFunction} from "express";
-import {UsersApi} from "../users-api";
-import {DbSetPasswordToken} from "../models/db/setPasswordToken";
+import {Api} from "../api";
+import {DbSetPasswordToken} from "../models/db/db-set-password-token";
 import {FindOptions, Instance, Model} from "sequelize";
-import {EntitySetPasswordToken} from "../models/db/entity-set-password-token";
+import {EntitySetPasswordToken} from "../models/business/entity-set-password-token";
 import {ControllerBase} from "@informaticon/devops.base-microservice";
 import * as express from "express";
 
@@ -92,6 +92,6 @@ export class SetPasswordTokenController extends ControllerBase {
     }
 
     private static getModel(): Model<Instance<DbSetPasswordToken>, DbSetPasswordToken> {
-        return UsersApi.inst.sequelize.models.setPasswordToken as Model<Instance<DbSetPasswordToken>, DbSetPasswordToken>;
+        return Api.inst.sequelize.models.setPasswordToken as Model<Instance<DbSetPasswordToken>, DbSetPasswordToken>;
     }
 }
