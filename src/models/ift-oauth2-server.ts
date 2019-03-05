@@ -8,6 +8,7 @@ import {DbClient} from "./db/db-client";
 import {DbAccessToken} from "./db/db-access-token";
 import * as Jwt from "jsonwebtoken";
 import * as Bcrypt from "bcrypt";
+let XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest;
 
 export class IftOAuth2Server {
     static getInstance(options: any) {
@@ -114,7 +115,7 @@ export class IftOAuth2Server {
                         //Clean expired tokens for the user
                         await model.destroy({
                             where: { IdClient: dbClient.Id, IdUser: user.id, ExpiresAt: {[Sequelize.Op.lt]: new Date()} }
-                        });
+                        });                                                                                                                                                       
 
                         //token not found -> create
                         inst = await model.create({
@@ -125,7 +126,7 @@ export class IftOAuth2Server {
                             TokenValue: token.accessToken,
                             IdUser: user.id,
                             IdClient: dbClient.Id
-                        });
+                        } as DbAccessToken);
                         t = inst.get();
                     }
 
@@ -142,7 +143,7 @@ export class IftOAuth2Server {
                     if (Api.inst.req === undefined || Api.inst.req.body.nonce === undefined)
                         throw new Error('request or nonce value is not defined');
 
-                    obj.id_token = IftOAuth2Server.getIdToken(obj, Api.inst.req.body.nonce);
+                    obj.id_token = await IftOAuth2Server.getIdToken(obj, Api.inst.req.body.nonce);
 
                     return obj;
                 });// .catch(() => {console.info('error (harps)')});
@@ -257,8 +258,10 @@ export class IftOAuth2Server {
         return new ExpressOAuthServer(opt);
     }
 
-    static getIdToken(token: Token, nonce: string): any {
+    static async getIdToken(token: Token, nonce: string): Promise<any> {
         try {
+
+            let userscope:string = await this.getUserScope(token.user.username);
             //const jwt = require('jsonwebtoken');
             return Jwt.sign({
                 iss: 'http://localhost:3000', // issuer -> OAuth server (this)
@@ -269,7 +272,7 @@ export class IftOAuth2Server {
                 at_hash: token.accessToken,
                 // jti: nonce,
                 nonce: nonce,
-                scope: 'Access/Read+Microservices/Users;Access+Microservices/Users/Users;Access/Read|Send+Microservices/Users/SetPasswordTokens|Tokens'
+                scope: userscope,//'Access/Read+Microservices/Users;Access+Microservices/Users/Users;Access/Read|Send+Microservices/Users/SetPasswordTokens|Tokens'
             }, '-----BEGIN RSA PRIVATE KEY-----\n' +
                 'MIIEowIBAAKCAQEAsphx6KhpetKXk/oR8vrDxwN8aaLsiBsYNvrWCA9oDcubuDD/\n' +
                 'YLnXH65QnNoRdlOW0+dCAStZVB3VtHR9qyUbqCvS443xC59nDrEHEpTO8+zeHzkk\n' +
@@ -303,5 +306,24 @@ export class IftOAuth2Server {
         } catch (ex) {
             console.error(ex.toString());
         }
+    }
+
+    static getUserScope(mail: string): Promise<string> {
+        return new Promise((resolve, reject) => {
+            console.log("/n/n/n mail:"+mail+"/n/n/n");
+            var xhr = new XMLHttpRequest();
+            xhr.open('get',`http://localhost:3001/api/users/${mail}/permissions`,true);
+            xhr.onload = () =>{
+                if (xhr.status != 200) {
+                    reject(xhr.statusText);
+                }else{
+                    resolve(xhr.responseText);
+                }
+
+            };
+            xhr.onerror = () => reject(xhr.statusText);
+            xhr.ontimeout  = () => reject(xhr.statusText);
+            xhr.send();
+        });
     }
 }
