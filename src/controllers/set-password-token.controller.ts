@@ -15,27 +15,16 @@ export class SetPasswordTokenController extends ControllerBase {
     public static create(baseUrl: string, server: express.Application) {
         const router = ControllerBase.getNewRouter();
 
-        router.get('/user/:id', (req: Request, res: Response, next: NextFunction) => {
-            new SetPasswordTokenController().getByUser(req, res, next);
-        });
-
-        router.post('/', (req: Request, res: Response, next: NextFunction) => {
-            new SetPasswordTokenController().create(req, res, next);
-        });
-
-        router.patch('/:id', (req: Request, res: Response, next: NextFunction) => {
-            new SetPasswordTokenController().update(req, res, next);
-        });
-
-        router.delete('/:id', (req: Request, res: Response, next: NextFunction) => {
-            new SetPasswordTokenController().remove(req, res, next);
-        });
+        router.get('/user/:id', SetPasswordTokenController.checkAccess(['Access/Read','Microservices/Identity-Service/Tokens']), SetPasswordTokenController.getByUser);
+        router.post('', SetPasswordTokenController.checkAccess(['Access/Create','Microservices/Identity-Service/Tokens']), SetPasswordTokenController.post);
+        router.patch('/:id', SetPasswordTokenController.checkAccess(['Access/Read','Microservices/Identity-Service/Tokens']), SetPasswordTokenController.update);
+        router.delete('/:id', SetPasswordTokenController.checkAccess(['Access/Delete','Microservices/Identity-Service/Tokens']), SetPasswordTokenController.remove);
 
         server.use(baseUrl, router);
     }
 
     // noinspection JSMethodCanBeStatic, JSUnusedLocalSymbols
-    public getByUser(req: Request, res: Response, next: NextFunction) {
+    public static getByUser(req: Request, res: Response, next: NextFunction) {
         const options: FindOptions<DbSetPasswordToken> = {};
         const entity = new EntitySetPasswordToken();
 
@@ -53,7 +42,7 @@ export class SetPasswordTokenController extends ControllerBase {
     }
 
     // noinspection JSUnusedLocalSymbols, JSMethodCanBeStatic
-    public create(req: Request, res: Response, next: NextFunction) {
+    public static post(req: Request, res: Response, next: NextFunction) {
         const entity = new EntitySetPasswordToken();
 
         try {
@@ -66,7 +55,7 @@ export class SetPasswordTokenController extends ControllerBase {
     }
 
     // noinspection JSUnusedLocalSymbols, JSMethodCanBeStatic
-    public update(req: Request, res: Response, next: NextFunction) {
+    public static update(req: Request, res: Response, next: NextFunction) {
         const entity = new EntitySetPasswordToken();
         const options: FindOptions<DbSetPasswordToken> = {where: {Id: req.params.id}};
 
@@ -79,7 +68,7 @@ export class SetPasswordTokenController extends ControllerBase {
     }
 
     // noinspection JSUnusedLocalSymbols, JSMethodCanBeStatic
-    public remove(req: Request, res: Response, next: NextFunction) {
+    public static remove(req: Request, res: Response, next: NextFunction) {
         const entity = new EntitySetPasswordToken();
         const options: FindOptions<DbSetPasswordToken> = {where: {Id: req.params.id}};
 

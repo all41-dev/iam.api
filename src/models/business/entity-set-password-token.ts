@@ -11,6 +11,8 @@ import * as NodeMailer from "nodemailer"
 export class EntitySetPasswordToken extends Entity<DbSetPasswordToken, SetPasswordToken> {
     tokenDurationSec = 3600 * 24; //1 day
 
+    public setIncludes(includePaths: string[], options: FindOptions<DbSetPasswordToken>): void{}
+
     // noinspection JSMethodCanBeStatic
     public setFilter(req: Request, options: FindOptions<DbSetPasswordToken>): void {
         const filter: string | undefined = req.query.filter;
@@ -126,7 +128,7 @@ export class EntitySetPasswordToken extends Entity<DbSetPasswordToken, SetPasswo
                             Message: message,
                             IdUser: userId,
                             TokenHash: crypto.randomBytes(64).toString('hex')
-                        };
+                        } as DbSetPasswordToken;
                     }
 
                     Api.inst.sequelize.models.setPasswordToken.create(token).then((t) => this.notifyUser(t));

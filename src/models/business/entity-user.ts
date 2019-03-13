@@ -9,6 +9,9 @@ import {EntitySetPasswordToken} from "./entity-set-password-token";
 import Bluebird = require("bluebird");
 
 export class EntityUser extends Entity<DbUser, User> {
+
+    public setIncludes(includePaths: string[], options: FindOptions<DbUser>): void{}
+
     // noinspection JSMethodCanBeStatic
     public setFilter(req: Request, options: FindOptions<DbUser>): void {
         const filter: string | undefined = req.query.filter;

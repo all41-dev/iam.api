@@ -22,88 +22,23 @@ export class UsersController extends ControllerBase {
         let router: Router;
         router = Router();
 
-        router.get('/', (req: Request, res: Response, next: NextFunction) => {
-            new UsersController().getAll(req, res, next);
-        });
+        
 
-        router.get('/:id', (req: Request, res: Response, next: NextFunction): void => {
-            new UsersController().getById(req, res, next);
-        });
-
-        router.get('/from-token/:token', (req: Request, res: Response, next: NextFunction): void => {
-            new UsersController().getFromToken(req, res, next);
-        });
-
-        /**
-         * @summary validates user credentials
-         * Make the hash from the user provided password and stored salt
-         * Compare with stored hash
-         * Returns true or false
-         * NOTE: This method is to be consumed exclusively from the oauth microservice
-         * @param email
-         * @param password
-         * @description
-         */
-        router.post('/authenticate', async (req: Request, res: Response, next: NextFunction) => {
-            new UsersController().authenticate(req, res, next);
-        });
-
-        /**
-         * @summary Receives a change password token ( covers new user and lost password scenarios)
-         * Receives a new password string
-         * Try to retrieve the token from db
-         * If exists and valid, invoke the save password process
-         */
-        router.patch('/change-password/:token', (req: Request, res: Response, next: NextFunction) => {
-            new UsersController().changePassword(req, res, next);
-        });
-
-        /**
-         * @summary Creates a user entry
-         * Receives email address
-         * Validates correctness and uniqueness of the email
-         * Saves new user in db
-         * Invoke the change password token process
-         * @param email
-         */
-        router.post('/', (req: Request, res: Response, next: NextFunction) => {
-            new UsersController().create(req, res, next);
-        });
-
-        /**
-         * @summary Updates a user entry
-         */
-        router.patch('/:id', (req: Request, res: Response, next: NextFunction) => {
-            new UsersController().update(req, res, next);
-        });
-
-        router.delete('/:id', (req: Request, res: Response, next: NextFunction) => {
-            new UsersController().remove(req, res, next);
-        });
-
-        /**
-         *  @summary Sends a lost password token if email exists
-         *  Verify that email exists in db
-         *  if yes invoke the change password token process
-         *  @param email
-         */
-        router.post('/lost-password/:email', (req: Request, res: Response, next: NextFunction) => {
-            new UsersController().lostPassword(req, res, next);
-        });
+        router.get('/', UsersController.checkAccess(['Access/Read','Microservices/Identity-Service/Users']), UsersController.getAll);
+        router.get('/:id', UsersController.checkAccess(['Access/Read','Microservices/Identity-Service/Users']), UsersController.getById);
+        router.get('/from-token/:token', UsersController.checkAccess(['Access/Read','Microservices/Identity-Service/Users']), UsersController.getFromToken);
+        router.post('/authenticate', UsersController.authenticate);
+        router.patch('/change-password/:token', UsersController.checkAccess(['Access/Update','Microservices/Identity-Service/Users/Password']), UsersController.changePassword);
+        router.post('/', UsersController.checkAccess(['Access/Create','Microservices/Identity-Service/Users']), UsersController.post);
+        router.patch('/:id', UsersController.checkAccess(['Access/Update','Microservices/Identity-Service/Users']), UsersController.update);
+        router.delete('/:id', UsersController.checkAccess(['Access/Delete','Microservices/Identity-Service/Users']), UsersController.remove);
+        router.post('/lost-password/:email', UsersController.lostPassword);
 
         server.use(baseUrl, router);
     }
 
     // noinspection JSUnusedLocalSymbols
-    public getAll(req: Request, res: Response, next: NextFunction) {
-        if( !this.hasAccess([
-            'Access/Read',
-            'Microservices/Users/Users'
-        ], req.headers.authorization)) {
-            res.status(403)
-            res.send();
-            return;
-        }
+    public static getAll(req: Request, res: Response, next: NextFunction) {
         //Since here, the user is considered as authorized
         const options: FindOptions<DbUser> = {};
         const entity = new EntityUser();
@@ -115,7 +50,7 @@ export class UsersController extends ControllerBase {
     }
 
     // noinspection JSUnusedLocalSymbols
-    public getById(req: Request, res: Response, next: NextFunction) {
+    public static getById(req: Request, res: Response, next: NextFunction) {
         const options: FindOptions<DbUser> = {};
         const entity = new EntityUser();
 
@@ -133,7 +68,7 @@ export class UsersController extends ControllerBase {
     }
 
     // noinspection JSUnusedLocalSymbols
-    public getFromToken(req: Request, res: Response, next: NextFunction) {
+    public static getFromToken(req: Request, res: Response, next: NextFunction) {
         const entity = new EntityUser();
 
         const token = req.params.token;
@@ -153,7 +88,7 @@ export class UsersController extends ControllerBase {
         entity.doGetFromToken(setPasswordTokenModel, options, res);
     }
 
-    public authenticate(req: Request, res: Response, next: NextFunction) {
+    public static authenticate(req: Request, res: Response, next: NextFunction) {
         Api.inst.req = req;
         Api.inst.res = res;
 
@@ -165,7 +100,7 @@ export class UsersController extends ControllerBase {
         oauthSrv.token()(req, res, next);
     }
 
-    public changePassword(req: Request, res: Response, next: NextFunction) {
+    public static changePassword(req: Request, res: Response, next: NextFunction) {
         const tokenModel = Api.inst.sequelize.models.setPasswordToken as
             Model<Instance<DbSetPasswordToken>, DbSetPasswordToken>;
         const userModel = Api.inst.sequelize.models.user as
@@ -199,15 +134,7 @@ export class UsersController extends ControllerBase {
         });
     }
 
-    public create(req: Request, res: Response, next: NextFunction) {
-        if( !this.hasAccess([
-            'Access/Create',
-            'Microservices/Users/Users'
-        ], req.headers.authorization)) {
-            res.status(403)
-            res.send();
-            return;
-        }
+    public static post(req: Request, res: Response, next: NextFunction) {
         const entity = new EntityUser();
 
         try {
@@ -218,7 +145,7 @@ export class UsersController extends ControllerBase {
         }
     }
 
-    public update(req: Request, res: Response, next: NextFunction) {
+    public static update(req: Request, res: Response, next: NextFunction) {
         const entity = new EntityUser();
         const options: FindOptions<DbUser> = {where: {Id: req.params.id}};
 
@@ -230,7 +157,7 @@ export class UsersController extends ControllerBase {
         }
     }
 
-    public remove(req: Request, res: Response, next: NextFunction) {
+    public static remove(req: Request, res: Response, next: NextFunction) {
         const entity = new EntityUser();
         const options: FindOptions<DbUser> = {where: {Id: req.params.id}};
 
@@ -242,7 +169,7 @@ export class UsersController extends ControllerBase {
         }
     }
 
-    public async lostPassword(req: Request, res: Response, next: NextFunction) {
+    public static async lostPassword(req: Request, res: Response, next: NextFunction) {
         const email: string =  req.body.email.toLowerCase();
 
         if (!EntityUser.emailIsValid(email)) {
@@ -268,100 +195,5 @@ export class UsersController extends ControllerBase {
 
     public static getModel(): Model<Instance<DbUser>, DbUser> {
         return Api.inst.sequelize.models.user as Model<Instance<DbUser>, DbUser>;
-    }
-
-    private hasAccess(scope: string[], authorizationHeader: string|undefined): boolean {
-        if (authorizationHeader === undefined || !authorizationHeader.toLowerCase().startsWith('bearer ')){
-            return false;
-        }
-        const jwtString = authorizationHeader.substr(7);
-        const tokenWithHeader = Jwt.decode(jwtString, { complete: true }) as any;
-
-        if ( tokenWithHeader === null){ return false; }
-        const kid = tokenWithHeader.header.kid;
-
-        const certs = JSON.parse(this.httpGet('http://localhost:3000/oauth2/certs'));
-        const keyDef = (certs.keys as [{kid: string, n: string, e: string}]).find(k => k.kid === kid);
-        if(keyDef === undefined) { return false; }
-
-        const key = new NodeRSA({ b: 256});
-        key.importKey({
-           n: Buffer.from(keyDef.n, 'base64'),
-           e: Buffer.from(keyDef.e, 'base64')
-        }/*, 'pkcs1-public-pem'*/);
-        const publicKey = key.exportKey('pkcs1-public-pem');
-
-        const token = Jwt.verify(jwtString, publicKey) as {scope: string};
-        if (token === null) {
-            throw new Error('Expected the token to be an Object')
-        }
-
-        const permissionsStr = token.scope;
-        //concat flatten array of arrays to array
-        const permissions: string[][] = [].concat.apply([], permissionsStr.split(';')
-            .map((p: string) => {
-                // functions for cartesian product, from -> https://stackoverflow.com/a/43053803/1073588
-                const f = (a: any, b: any) => [].concat(...a.map((d: any) => b.map((e: any) => [].concat(d, e))));
-                const cartesian = (a: string[], b?: string[], ...c: string[][]): string[] => (b ? cartesian(f(a, b), ...c) : a);
-
-                const permissionScopes = p.split('+')
-                    .map((scope: string) => {
-                        // process permission scope
-                        if (scope.indexOf('|') === -1) {
-                            return [scope]
-                        }
-                        // the scope path contains '|', then build one scope by combination
-                        const optionsArr = scope.split('/')
-                            .map(slashPart => slashPart.split('|'));
-                        if (optionsArr === undefined){}
-                        const cart =  cartesian(optionsArr[0], ...optionsArr.slice(1)).map((sc: any) => sc.join('/'));
-                        return cart;
-                    });
-                const cart2 = cartesian(permissionScopes[0], ...permissionScopes.slice(1));
-                // console.info(cart2);
-                // console.info('---');
-                return cart2;
-            }));
-        return permissions.some(p => {
-            if (scope.length !== p.length) {  return false; }
-            let localScope: string[] = JSON.parse(JSON.stringify(scope))
-            let matches = 0;
-
-            for(;localScope.length > 0;) {
-                for(let i = 0;i < p.length; i++) {
-                    if (localScope[0].startsWith(p[i])) {
-                        matches++;
-                        //break;
-                    }
-                }
-                localScope = localScope.slice(1);
-            }
-            console.info(p);
-            console.info(scope);
-            console.info(`matches: ${matches} scopes: ${scope.length}`);
-            return matches === scope.length;
-        });
-    }
-
-    private httpGet(url: string): string {
-        if(url === 'http://localhost:3000/oauth2/certs'){
-            //server calling himself causes a freeze
-            return '{\n' +
-                '            "keys": [\n' +
-                '                {\n' +
-                '                    "kty": "RSA",\n' +
-                '                    "alg": "RS256",\n' +
-                '                    "use": "sig",\n' +
-                '                    "kid": "4129db2ea1860d2e871ee48506287fb05b04ca3f",\n' +
-                '                    "n": "sphx6KhpetKXk/oR8vrDxwN8aaLsiBsYNvrWCA9oDcubuDD/YLnXH65QnNoRdlOW0+dCAStZVB3VtHR9qyUbqCvS443xC59nDrEHEpTO8+zeHzkkIp4zVU0vvowZlkVqZZA032dCEaB4LSIzZoxWa1OHSfmQgR90zMVDCI98YCNvTGrdJ66GrYRVdjnd5Jg5ebZVtfa9VMN1WBro02pLJ8K/cux/i7KO0zovDYhID90wNU/q8F1nzlDcs5TiPPBBTNWfGLMRVec2xbIpQ9T3Ou0Yn4xPUimwVRSrvkcCF1MTbm55/Jv9EdRbrVk46n3qZMbx0cHDGCUjaAcKbkVkcQ==",\n' +
-                '                    "e": "AQAB"\n' +
-                '                }\n' +
-                '            ]\n' +
-                '        }'
-        }
-        var xmlHttp = new XMLHttpRequest();
-        xmlHttp.open( "GET", url, false ); // false for synchronous request
-        xmlHttp.send( null );
-        return xmlHttp.responseText;
     }
 }
