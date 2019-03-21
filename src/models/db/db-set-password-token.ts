@@ -1,11 +1,4 @@
-import {
-    Instance,
-    Model,
-    INTEGER,
-    STRING,
-    BelongsToGetAssociationMixin,
-    BelongsToSetAssociationMixin, BelongsToCreateAssociationMixin, Sequelize, DATE
-} from "sequelize";
+import {Instance, Sequelize, Model, INTEGER, STRING, DATE, BelongsToGetAssociationMixin, BelongsToSetAssociationMixin, BelongsToCreateAssociationMixin} from "sequelize";
 import {DbEntity, SequelizeAttributes} from "@informaticon/devops.base-microservice";
 import {DbUser, DbUserInstance} from "./db-user";
 
@@ -21,7 +14,7 @@ export class DbSetPasswordToken extends DbEntity {
     // public CreatedAt: number | undefined;// timestamp
     // public UpdatedAt: number | undefined// timestamp
 
-    static factory = (sequelize: Sequelize): Model<DbSetPasswordTokenInstance, DbSetPasswordToken> => {
+    public static factory = (sequelize: Sequelize): Model<IDbSetPasswordTokenInstance, DbSetPasswordToken> => {
         const attr: SequelizeAttributes<DbSetPasswordToken> = {
             Id : { type: INTEGER, autoIncrement: true, primaryKey: true},
             IdUser : { type: INTEGER, },
@@ -29,7 +22,7 @@ export class DbSetPasswordToken extends DbEntity {
             Expires : { type: DATE, },
             TokenHash: { type: STRING, }
         };
-        const def = sequelize.define<DbSetPasswordTokenInstance, DbSetPasswordToken>('dbSetPasswordToken', attr, { tableName: "SetPasswordTokens" });
+        const def = sequelize.define<IDbSetPasswordTokenInstance, DbSetPasswordToken>('dbSetPasswordToken', attr, { tableName: "SetPasswordTokens" });
 
         def.associate = models => {
             def.belongsTo(models.user, {as: 'user', foreignKey: 'IdUser'})
@@ -39,7 +32,7 @@ export class DbSetPasswordToken extends DbEntity {
     };
 }
 
-export interface DbSetPasswordTokenInstance extends Instance<DbSetPasswordToken>, DbSetPasswordToken {
+export interface IDbSetPasswordTokenInstance extends Instance<DbSetPasswordToken>, DbSetPasswordToken {
     getUser: BelongsToGetAssociationMixin<DbUserInstance>;
     setUser: BelongsToSetAssociationMixin<DbUserInstance, DbUserInstance['Id']>;
     createUser: BelongsToCreateAssociationMixin<DbUser, DbUserInstance>;

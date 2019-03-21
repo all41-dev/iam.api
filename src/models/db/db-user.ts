@@ -1,6 +1,6 @@
 import {
-    Sequelize,
     Instance,
+    Sequelize,
     Model,
     INTEGER,
     STRING,
@@ -15,8 +15,8 @@ import {
     HasManyHasAssociationsMixin, HasManyCountAssociationsMixin
 } from "sequelize";
 import {DbEntity, SequelizeAttributes} from "@informaticon/devops.base-microservice";
-import {DbSetPasswordToken, DbSetPasswordTokenInstance} from "./db-set-password-token";
-import {DbAccessToken, DbAccessTokenInstance} from "./db-access-token";
+import {DbSetPasswordToken, IDbSetPasswordTokenInstance} from "./db-set-password-token";
+import {DbAccessToken, IDbAccessTokenInstance} from "./db-access-token";
 
 export class DbUser extends DbEntity {
     Email: string | undefined;
@@ -45,25 +45,25 @@ export class DbUser extends DbEntity {
 }
 
 export interface DbUserInstance extends Instance<DbUser>, DbUser {
-    getSetPasswordTokens: HasManyGetAssociationsMixin<DbSetPasswordTokenInstance>;
-    setSetPasswordTokens: HasManySetAssociationsMixin<DbSetPasswordTokenInstance, DbSetPasswordTokenInstance['Id']>;
-    addSetPasswordTokens: HasManyAddAssociationsMixin<DbSetPasswordTokenInstance, DbSetPasswordTokenInstance['Id']>;
-    addSetPasswordToken: HasManyAddAssociationMixin<DbSetPasswordTokenInstance, DbSetPasswordTokenInstance['Id']>;
-    createSetPasswordToken: HasManyCreateAssociationMixin<DbSetPasswordToken, DbSetPasswordTokenInstance>;
-    removeSetPasswordToken: HasManyRemoveAssociationMixin<DbSetPasswordTokenInstance, DbSetPasswordTokenInstance['Id']>;
-    removeSetPasswordTokens: HasManyRemoveAssociationsMixin<DbSetPasswordTokenInstance, DbSetPasswordTokenInstance['Id']>;
-    hasSetPasswordToken: HasManyHasAssociationMixin<DbSetPasswordTokenInstance, DbSetPasswordTokenInstance['Id']>;
-    hasSetPasswordTokens: HasManyHasAssociationsMixin<DbSetPasswordTokenInstance, DbSetPasswordTokenInstance['Id']>;
+    getSetPasswordTokens: HasManyGetAssociationsMixin<IDbSetPasswordTokenInstance>;
+    setSetPasswordTokens: HasManySetAssociationsMixin<IDbSetPasswordTokenInstance, IDbSetPasswordTokenInstance['Id']>;
+    addSetPasswordTokens: HasManyAddAssociationsMixin<IDbSetPasswordTokenInstance, IDbSetPasswordTokenInstance['Id']>;
+    addSetPasswordToken: HasManyAddAssociationMixin<IDbSetPasswordTokenInstance, IDbSetPasswordTokenInstance['Id']>;
+    createSetPasswordToken: HasManyCreateAssociationMixin<DbSetPasswordToken, IDbSetPasswordTokenInstance>;
+    removeSetPasswordToken: HasManyRemoveAssociationMixin<IDbSetPasswordTokenInstance, IDbSetPasswordTokenInstance['Id']>;
+    removeSetPasswordTokens: HasManyRemoveAssociationsMixin<IDbSetPasswordTokenInstance, IDbSetPasswordTokenInstance['Id']>;
+    hasSetPasswordToken: HasManyHasAssociationMixin<IDbSetPasswordTokenInstance, IDbSetPasswordTokenInstance['Id']>;
+    hasSetPasswordTokens: HasManyHasAssociationsMixin<IDbSetPasswordTokenInstance, IDbSetPasswordTokenInstance['Id']>;
     countSetPasswordTokens: HasManyCountAssociationsMixin;
 
-    getAccessTokens: HasManyGetAssociationsMixin<DbAccessTokenInstance>;
-    setAccessTokens: HasManySetAssociationsMixin<DbAccessTokenInstance, DbAccessTokenInstance['Id']>;
-    addAccessTokens: HasManyAddAssociationsMixin<DbAccessTokenInstance, DbAccessTokenInstance['Id']>;
-    addAccessToken: HasManyAddAssociationMixin<DbAccessTokenInstance, DbAccessTokenInstance['Id']>;
-    createAccessToken: HasManyCreateAssociationMixin<DbAccessToken, DbAccessTokenInstance>;
-    removeAccessToken: HasManyRemoveAssociationMixin<DbAccessTokenInstance, DbAccessTokenInstance['Id']>;
-    removeAccessTokens: HasManyRemoveAssociationsMixin<DbAccessTokenInstance, DbAccessTokenInstance['Id']>;
-    hasAccessToken: HasManyHasAssociationMixin<DbAccessTokenInstance, DbAccessTokenInstance['Id']>;
-    hasAccessTokens: HasManyHasAssociationsMixin<DbAccessTokenInstance, DbAccessTokenInstance['Id']>;
+    getAccessTokens: HasManyGetAssociationsMixin<IDbAccessTokenInstance>;
+    setAccessTokens: HasManySetAssociationsMixin<IDbAccessTokenInstance, IDbAccessTokenInstance['Id']>;
+    addAccessTokens: HasManyAddAssociationsMixin<IDbAccessTokenInstance, IDbAccessTokenInstance['Id']>;
+    addAccessToken: HasManyAddAssociationMixin<IDbAccessTokenInstance, IDbAccessTokenInstance['Id']>;
+    createAccessToken: HasManyCreateAssociationMixin<DbAccessToken, IDbAccessTokenInstance>;
+    removeAccessToken: HasManyRemoveAssociationMixin<IDbAccessTokenInstance, IDbAccessTokenInstance['Id']>;
+    removeAccessTokens: HasManyRemoveAssociationsMixin<IDbAccessTokenInstance, IDbAccessTokenInstance['Id']>;
+    hasAccessToken: HasManyHasAssociationMixin<IDbAccessTokenInstance, IDbAccessTokenInstance['Id']>;
+    hasAccessTokens: HasManyHasAssociationsMixin<IDbAccessTokenInstance, IDbAccessTokenInstance['Id']>;
     countAccessTokens: HasManyCountAssociationsMixin;
 }

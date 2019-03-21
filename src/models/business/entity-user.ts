@@ -1,10 +1,10 @@
-import {Entity} from "@informaticon/devops.base-microservice/index";
+import {Entity} from "@informaticon/devops.base-microservice";
 import {Request, Response} from "express";
 import {DestroyOptions, FindOptions, Instance, Model} from "sequelize";
 import {DbUser, DbUserInstance} from "../db/db-user";
 import {User} from "@informaticon/devops.identity-model";
 import {Api} from "../../api";
-import {DbSetPasswordToken, DbSetPasswordTokenInstance} from "../db/db-set-password-token";
+import {DbSetPasswordToken, IDbSetPasswordTokenInstance} from "../db/db-set-password-token";
 import {EntitySetPasswordToken} from "./entity-set-password-token";
 import Bluebird = require("bluebird");
 
@@ -115,7 +115,7 @@ export class EntityUser extends Entity<DbUser, User> {
         options: FindOptions<DbSetPasswordToken>, res: Response) {
 
         model.find(options).then((spt: Instance<DbSetPasswordToken>|null) => {
-            const token = spt as DbSetPasswordTokenInstance;
+            const token = spt as IDbSetPasswordTokenInstance;
             if(token === null) {
                 res.json("The provided token is not valid.")
             } else {

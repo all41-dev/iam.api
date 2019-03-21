@@ -1,39 +1,29 @@
-import {Request, Response, NextFunction} from "express";
+import {Router, Request, Response, NextFunction} from "express";
 import {ControllerBase} from "@informaticon/devops.base-microservice";
-import * as express from "express";
 
 export class OAuthController extends ControllerBase {
     constructor() {
         super();
     }
 
-    public static create(baseUrl: string, server: express.Application) {
-        const router = ControllerBase.getNewRouter();
+    public static create() {
+        const router = Router();
 
         /** Welcome page **/
-        router.get('/', (req: Request, res: Response, next: NextFunction) => {
-            new OAuthController().index(req, res, next);
-        });
+        router.get('/', OAuthController.index);
+        router.get('/.well-known/openid-configuration', OAuthController.getConfig);
+        router.get('/oauth2/certs', OAuthController.getCertificates);
 
-        router.get('/.well-known/openid-configuration', (req: Request, res: Response, next: NextFunction) => {
-            new OAuthController().getConfig(req, res, next);
-        });
-
-        router.get('/oauth2/certs', (req: Request, res: Response, next: NextFunction) => {
-            new OAuthController().getCertificates(req, res, next);
-        });
-
-
-        server.use(baseUrl, router);
+        return router;
     }
 
     // noinspection JSUnusedLocalSymbols, JSMethodCanBeStatic
-    public index(req: Request, res: Response, next: NextFunction) {
+    public static index(req: Request, res: Response, next: NextFunction) {
         res.render('index', { title: 'Informaticon OAuth Server' });
     }
 
     // noinspection JSUnusedLocalSymbols, JSMethodCanBeStatic
-    public getConfig(req: Request, res: Response, next: NextFunction) {
+    public static getConfig(req: Request, res: Response, next: NextFunction) {
         const apiHost = req.protocol + '://' + req.get('host'); // + req.originalUrl;
         const uiHost = 'http://localhost:4201';
 
@@ -91,7 +81,7 @@ export class OAuthController extends ControllerBase {
     }
 
     // noinspection JSUnusedLocalSymbols, JSMethodCanBeStatic
-    public getCertificates(req: Request, res: Response, next: NextFunction) {
+    public static getCertificates(req: Request, res: Response, next: NextFunction) {
         res.json({
             "keys": [
                 {

@@ -135,4 +135,4 @@ fabric.properties
 .idea/httpRequests
 
 # /dist folder
-/dist
+dist/

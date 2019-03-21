@@ -1,10 +1,10 @@
 import {Request, Response, NextFunction, Router, Application} from "express";
 import {Api} from "../api";
-import {DbUser} from "../models/db/db-user";
+import {DbUser, DbUserInstance} from "../models/db/db-user";
 import {FindOptions, Model, Instance} from "sequelize";
 import {EntityUser} from "../models/business/entity-user";
 import {EntitySetPasswordToken} from "../models/business/entity-set-password-token";
-import {DbSetPasswordToken, DbSetPasswordTokenInstance} from "../models/db/db-set-password-token";
+import {DbSetPasswordToken, IDbSetPasswordTokenInstance} from "../models/db/db-set-password-token";
 import * as Bcrypt from "bcrypt"
 import * as Jwt from "jsonwebtoken"
 import {OAuth2Server} from "oauth2-server"
@@ -18,9 +18,8 @@ export class UsersController extends ControllerBase {
         super();
     }
 
-    public static create(baseUrl: string, server: Application) {
-        let router: Router;
-        router = Router();
+    public static create() {
+        const router = Router();
 
         
 
@@ -34,7 +33,7 @@ export class UsersController extends ControllerBase {
         router.delete('/:id', UsersController.checkAccess(['Access/Delete','Microservices/Identity-Service/Users']), UsersController.remove);
         router.post('/lost-password/:email', UsersController.lostPassword);
 
-        server.use(baseUrl, router);
+        return router;
     }
 
     // noinspection JSUnusedLocalSymbols
@@ -89,8 +88,8 @@ export class UsersController extends ControllerBase {
     }
 
     public static authenticate(req: Request, res: Response, next: NextFunction) {
-        Api.inst.req = req;
-        Api.inst.res = res;
+        Api.req = req;
+        Api.res = res;
 
         const oauthSrv = IftOAuth2Server.getInstance({
             requireClientAuthentication: {password: false},
@@ -114,8 +113,8 @@ export class UsersController extends ControllerBase {
                 }
             };
             tokenModel.find(options).then(async (spt: Instance<DbSetPasswordToken>|null) => {
-                const inst = spt as DbSetPasswordTokenInstance;
-                return inst.getUser().then(async (user) => {
+                const inst = spt as IDbSetPasswordTokenInstance;
+                return inst.getUser().then(async (user: DbUserInstance|null) => {
                     if (user === null) throw new Error('user id null');
 
                     const salt = Bcrypt.genSaltSync(10);

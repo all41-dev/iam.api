@@ -1,4 +1,4 @@
-import * as Sequelize from "sequelize";
+import {Instance, Sequelize, Model, INTEGER, STRING, DATE, BelongsToGetAssociationMixin, BelongsToSetAssociationMixin, BelongsToCreateAssociationMixin} from "sequelize";
 import {DbEntity, SequelizeAttributes} from "@informaticon/devops.base-microservice";
 import {DbUser, DbUserInstance} from "./db-user";
 import {DbClient, DbClientInstance} from "./db-client";
@@ -16,32 +16,32 @@ export class DbAccessToken extends DbEntity {
     // public CreatedAt: number | undefined;// timestamp
     // public UpdatedAt: number | undefined// timestamp
 
-    static factory = (sequelize: Sequelize.Sequelize): Sequelize.Model<DbAccessTokenInstance, DbAccessToken> => {
+    static factory = (sequelize: Sequelize): Model<IDbAccessTokenInstance, DbAccessToken> => {
         const attr: SequelizeAttributes<DbAccessToken> = {
-            Id : { type: Sequelize.INTEGER, autoIncrement: true, primaryKey: true},
-            IdUser : { type: Sequelize.INTEGER, },
-            IdClient : { type: Sequelize.INTEGER, },
-            TokenValue : { type: Sequelize.STRING, },
-            ExpiresAt : { type: Sequelize.DATE, },// todo refactor type
-            Scopes: { type: Sequelize.STRING, }
+            Id : { type: INTEGER, autoIncrement: true, primaryKey: true},
+            IdUser : { type: INTEGER, },
+            IdClient : { type: INTEGER, },
+            TokenValue : { type: STRING, },
+            ExpiresAt : { type: DATE, },// todo refactor type
+            Scopes: { type: STRING, }
         };
-        const def =  sequelize.define<DbAccessTokenInstance, DbAccessToken>('dbAccessToken', attr, { tableName: "AccessTokens" });
+        const def =  sequelize.define<IDbAccessTokenInstance, DbAccessToken>('dbAccessToken', attr, { tableName: "AccessTokens" });
 
         def.associate = models => {
             def.belongsTo(models.user, {as: 'user', foreignKey: 'IdUser'});
             def.belongsTo(models.client, {as: 'client', foreignKey: 'IdClient'});
         };
 
-        return def;
+        return def as any;
     };
 }
 
-export interface DbAccessTokenInstance extends Sequelize.Instance<DbAccessToken>, DbAccessToken {
-    getUser: Sequelize.BelongsToGetAssociationMixin<DbUserInstance>;
-    setUser: Sequelize.BelongsToSetAssociationMixin<DbUserInstance, DbUserInstance['Id']>;
-    createUser: Sequelize.BelongsToCreateAssociationMixin<DbUser, DbUserInstance>;
+export interface IDbAccessTokenInstance extends Instance<DbAccessToken>, DbAccessToken {
+    getUser: BelongsToGetAssociationMixin<DbUserInstance>;
+    setUser: BelongsToSetAssociationMixin<DbUserInstance, DbUserInstance['Id']>;
+    createUser: BelongsToCreateAssociationMixin<DbUser, DbUserInstance>;
 
-    getClient: Sequelize.BelongsToGetAssociationMixin<DbClientInstance>;
-    setClient: Sequelize.BelongsToSetAssociationMixin<DbClientInstance, DbClientInstance['Id']>;
-    createClient: Sequelize.BelongsToCreateAssociationMixin<DbClient, DbClientInstance>;
+    getClient: BelongsToGetAssociationMixin<DbClientInstance>;
+    setClient: BelongsToSetAssociationMixin<DbClientInstance, DbClientInstance['Id']>;
+    createClient: BelongsToCreateAssociationMixin<DbClient, DbClientInstance>;
 }

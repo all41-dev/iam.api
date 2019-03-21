@@ -1,5 +1,4 @@
-import {ApiBase} from "@informaticon/devops.base-microservice";
-import {Models} from "sequelize";
+import {ApiBase, IApiOptions} from "@informaticon/devops.base-microservice";
 import {DbUser} from "./models/db/db-user";
 import {DbSetPasswordToken} from "./models/db/db-set-password-token";
 import {UsersController} from "./controllers/users.controller";
@@ -7,33 +6,25 @@ import {SetPasswordTokenController} from "./controllers/set-password-token.contr
 import {OAuthController} from "./controllers/oauth.controller";
 import {DbAccessToken} from "./models/db/db-access-token";
 import {DbClient} from "./models/db/db-client";
+import {Request, Response} from "express";
 
 /** Hosts route definitions and sequelize model initialization */
 export class Api extends ApiBase{
-    public registerRoutes() {
-        // todo: doesn't work, nice to have for API documentation
-        //this.express.use('/api', express.static("static"));
+    public static req: Request;
+    public static res: Response;
 
-        UsersController.create("/api/users", this.express);
-        SetPasswordTokenController.create("/api/set-password-token", this.express);
-        OAuthController.create("", this.express)
-    };
+    public init(options: IApiOptions) {
+        this.sequelizeInit(options.sequelize, {
+            user : DbUser,
+            setPasswordToken : DbSetPasswordToken,
+            accessToken : DbAccessToken,
+            client : DbClient,
+        })
 
-    public registerModels() : Models {
-        const models : Models = this.sequelize.models = {
-            user : DbUser.factory(this.sequelize),
-            setPasswordToken : DbSetPasswordToken.factory(this.sequelize),
-            accessToken : DbAccessToken.factory(this.sequelize),
-            client : DbClient.factory(this.sequelize),
-        };
+        this.router.use('/users', UsersController.create());
+        this.router.use('/set-password-token', SetPasswordTokenController.create());
+        this.router.use("/oauth", OAuthController.create())
 
-        Object.keys(models).forEach((entityName: string) => {
-            const model = models[entityName];
-            if(model.associate) {
-                model.associate(models)
-            }
-        });
-
-        return models;
+        return this.router;
     }
 }

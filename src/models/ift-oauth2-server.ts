@@ -140,10 +140,10 @@ export class IftOAuth2Server {
                         User: user,
                         id_token: undefined
                     };
-                    if (Api.inst.req === undefined || Api.inst.req.body.nonce === undefined)
+                    if (Api.req === undefined || Api.req.body.nonce === undefined)
                         throw new Error('request or nonce value is not defined');
 
-                    obj.id_token = await IftOAuth2Server.getIdToken(obj, Api.inst.req.body.nonce);
+                    obj.id_token = await IftOAuth2Server.getIdToken(obj, Api.req.body.nonce);
 
                     return obj;
                 });// .catch(() => {console.info('error (harps)')});

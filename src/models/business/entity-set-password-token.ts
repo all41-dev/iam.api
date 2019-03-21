@@ -1,8 +1,8 @@
-import {Entity} from "@informaticon/devops.base-microservice/index";
+import {Entity} from "@informaticon/devops.base-microservice";
 import {Request} from "express";
 import {FindOptions} from "sequelize";
 import {SetPasswordToken} from "@informaticon/devops.identity-model";
-import {DbSetPasswordToken, DbSetPasswordTokenInstance} from "../db/db-set-password-token";
+import {DbSetPasswordToken, IDbSetPasswordTokenInstance} from "../db/db-set-password-token";
 import {Api} from "../../api";
 import * as Sequelize from "sequelize";
 import * as crypto from "crypto";
@@ -24,7 +24,7 @@ export class EntitySetPasswordToken extends Entity<DbSetPasswordToken, SetPasswo
     }
 
     // noinspection JSMethodCanBeStatic
-    public async dbToClient(inst: DbSetPasswordTokenInstance): Promise<SetPasswordToken> {
+    public async dbToClient(inst: IDbSetPasswordTokenInstance): Promise<SetPasswordToken> {
         const dbObj = inst.get();
         return new SetPasswordToken(
             dbObj.Id,
@@ -72,7 +72,7 @@ export class EntitySetPasswordToken extends Entity<DbSetPasswordToken, SetPasswo
         spt.expires = dt;
         return spt;
     }
-    public async postCreation(inst: DbSetPasswordTokenInstance): Promise<DbSetPasswordTokenInstance> {
+    public async postCreation(inst: IDbSetPasswordTokenInstance): Promise<IDbSetPasswordTokenInstance> {
         await this.notifyUser(inst);
         return inst;
     }
@@ -135,7 +135,7 @@ export class EntitySetPasswordToken extends Entity<DbSetPasswordToken, SetPasswo
                 })
             });
     };
-    notifyUser = async (t: DbSetPasswordTokenInstance): Promise<void> => {
+    notifyUser = async (t: IDbSetPasswordTokenInstance): Promise<void> => {
         // send email to user
         const user = await t.getUser();
         if (user === null)

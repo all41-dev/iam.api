@@ -1,30 +1,27 @@
-import {Request, Response, NextFunction} from "express";
+import {Router, Request, Response, NextFunction} from "express";
 import {Api} from "../api";
 import {DbSetPasswordToken} from "../models/db/db-set-password-token";
 import {FindOptions, Instance, Model} from "sequelize";
 import {EntitySetPasswordToken} from "../models/business/entity-set-password-token";
 import {ControllerBase} from "@informaticon/devops.base-microservice";
-import * as express from "express";
 
-console.log("registring example routes");
 export class SetPasswordTokenController extends ControllerBase {
     constructor() {
         super();
     }
 
-    public static create(baseUrl: string, server: express.Application) {
-        const router = ControllerBase.getNewRouter();
+    public static create() {
+        const router = Router();
 
         router.get('/user/:id', SetPasswordTokenController.checkAccess(['Access/Read','Microservices/Identity-Service/Tokens']), SetPasswordTokenController.getByUser);
         router.post('', SetPasswordTokenController.checkAccess(['Access/Create','Microservices/Identity-Service/Tokens']), SetPasswordTokenController.post);
         router.patch('/:id', SetPasswordTokenController.checkAccess(['Access/Read','Microservices/Identity-Service/Tokens']), SetPasswordTokenController.update);
         router.delete('/:id', SetPasswordTokenController.checkAccess(['Access/Delete','Microservices/Identity-Service/Tokens']), SetPasswordTokenController.remove);
 
-        server.use(baseUrl, router);
+        return router;
     }
 
-    // noinspection JSMethodCanBeStatic, JSUnusedLocalSymbols
-    public static getByUser(req: Request, res: Response, next: NextFunction) {
+    public static getByUser(req: Request, res: Response) {
         const options: FindOptions<DbSetPasswordToken> = {};
         const entity = new EntitySetPasswordToken();
 
