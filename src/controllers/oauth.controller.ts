@@ -25,14 +25,13 @@ export class OAuthController extends ControllerBase {
     // noinspection JSUnusedLocalSymbols, JSMethodCanBeStatic
     public static getConfig(req: Request, res: Response, next: NextFunction) {
         const apiHost = req.protocol + '://' + req.get('host'); // + req.originalUrl;
-        const uiHost = 'http://localhost:4201';
 
         res.json({
             "issuer": apiHost,//"http://localhost:1212",
-            "authorization_endpoint": `${uiHost}/authentication`,//"http://localhost:4200/authentication",
+            "authorization_endpoint": `${apiHost}/authentication`,//"http://localhost:4200/authentication",
             "token_endpoint": `${apiHost}/oauth/token`,//"http://localhost:1212/oauth/token",
             "userinfo_endpoint": `${apiHost}/profile`,//"http://localhost:1212/profile",
-            "revocation_endpoint": "https://accounts.google.com/o/oauth2/revoke",
+            "revocation_endpoint": "not implemented yet",//"https://accounts.google.com/o/oauth2/revoke",
             "jwks_uri": `${apiHost}/oauth2/certs`,//"http://localhost:1212/oauth2/certs",
             "response_types_supported": [
                 "code",

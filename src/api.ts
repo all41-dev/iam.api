@@ -21,9 +21,9 @@ export class Api extends ApiBase{
             client : DbClient,
         })
 
-        this.router.use('/users', UsersController.create());
-        this.router.use('/set-password-token', SetPasswordTokenController.create());
-        this.router.use("/oauth", OAuthController.create())
+        this.router.use('/api/users', UsersController.create());
+        this.router.use('/api/set-password-token', SetPasswordTokenController.create());
+        this.router.use("/", OAuthController.create())
 
         return this.router;
     }

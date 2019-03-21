@@ -89,7 +89,7 @@ export class IftOAuth2Server {
             },
             saveToken: (token: Token, client: Client, user: User): any => {
                 console.info('In saveToken OAuth method');
-                const model = Api.inst.sequelize.models.accessToken as
+                const model = Api.inst.sequelize.models.dbAccessToken as
                     Model<Sequelize.Instance<DbAccessToken>, DbAccessToken>;
                 const resp = model.findOne({
                     where: {
