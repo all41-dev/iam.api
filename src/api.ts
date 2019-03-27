@@ -1,30 +1,30 @@
-import {ApiBase, IApiOptions} from "@informaticon/devops.base-microservice";
-import {DbUser} from "./models/db/db-user";
-import {DbSetPasswordToken} from "./models/db/db-set-password-token";
-import {UsersController} from "./controllers/users.controller";
-import {SetPasswordTokenController} from "./controllers/set-password-token.controller";
-import {OAuthController} from "./controllers/oauth.controller";
-import {DbAccessToken} from "./models/db/db-access-token";
-import {DbClient} from "./models/db/db-client";
-import {Request, Response} from "express";
+import { ApiBase, IApiOptions } from '@informaticon/devops.base-microservice';
+import { Request, Response } from 'express';
+import { OAuthController } from './controllers/oauth.controller';
+import { SetPasswordTokenController } from './controllers/set-password-token.controller';
+import { UsersController } from './controllers/users.controller';
+import { DbAccessToken } from './models/db/db-access-token';
+import { DbClient } from './models/db/db-client';
+import { DbSetPasswordToken } from './models/db/db-set-password-token';
+import { DbUser } from './models/db/db-user';
 
 /** Hosts route definitions and sequelize model initialization */
-export class Api extends ApiBase{
-    public static req: Request;
-    public static res: Response;
+export class Api extends ApiBase {
+  public static req: Request;
+  public static res: Response;
 
-    public init(options: IApiOptions) {
-        this.sequelizeInit(options.sequelize, {
-            user : DbUser,
-            setPasswordToken : DbSetPasswordToken,
-            accessToken : DbAccessToken,
-            client : DbClient,
-        })
+  public init(options: IApiOptions) {
+    this.sequelizeInit(options.sequelize, {
+      accessToken: DbAccessToken,
+      client: DbClient,
+      setPasswordToken: DbSetPasswordToken,
+      user: DbUser,
+    });
 
-        this.router.use('/api/users', UsersController.create());
-        this.router.use('/api/set-password-token', SetPasswordTokenController.create());
-        this.router.use("/", OAuthController.create())
+    this.router.use('/api/users', UsersController.create());
+    this.router.use('/api/set-password-token', SetPasswordTokenController.create());
+    this.router.use('/', OAuthController.create());
 
-        return this.router;
-    }
+    return this.router;
+  }
 }

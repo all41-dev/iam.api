@@ -1,55 +1,73 @@
-import {Sequelize, INTEGER, STRING, Model, Instance, HasManyGetAssociationsMixin, HasManySetAssociationsMixin, HasManyAddAssociationsMixin, HasManyAddAssociationMixin, HasManyCreateAssociationMixin, HasManyRemoveAssociationMixin, HasManyRemoveAssociationsMixin, HasManyHasAssociationMixin, HasManyHasAssociationsMixin, HasManyCountAssociationsMixin} from "sequelize";
-import {DbEntity, SequelizeAttributes} from "@informaticon/devops.base-microservice";
-import {DbAccessToken, IDbAccessTokenInstance} from "./db-access-token";
+import { DbEntity, SequelizeAttributes } from '@informaticon/devops.base-microservice';
+import {
+  HasManyAddAssociationMixin,
+  HasManyAddAssociationsMixin,
+  HasManyCountAssociationsMixin,
+  HasManyCreateAssociationMixin,
+  HasManyGetAssociationsMixin,
+  HasManyHasAssociationMixin,
+  HasManyHasAssociationsMixin,
+  HasManyRemoveAssociationMixin,
+  HasManyRemoveAssociationsMixin,
+  HasManySetAssociationsMixin,
+  Instance,
+  INTEGER,
+  Model,
+  Sequelize,
+  STRING,
+} from 'sequelize';
+import { DbAccessToken, IDbAccessTokenInstance } from './db-access-token';
 
 export class DbClient extends DbEntity {
-    ClientId!: string;
-    ClientSecret?: string;
-    Name!: string;
-    RedirectUris?: string;
-    Grants?: string;
 
-    public accessTokens?: DbAccessToken[] | DbAccessToken['Id'][];
+  public static factory = (sequelize: Sequelize): Model<IDbClientInstance, DbClient> => {
+    const attr: SequelizeAttributes<DbClient> = {
+      ClientId: { type: STRING },
+      ClientSecret: { type: STRING },
+      Grants: { type: STRING },
+      Id: { type: INTEGER, autoIncrement: true, primaryKey: true },
+      Name: { type: STRING },
+      RedirectUris: { type: STRING },
+    };
+    const def = sequelize.define<IDbClientInstance, DbClient>('client', attr, { tableName: 'Clients' });
 
-    static factory = (sequelize: Sequelize): Model<DbClientInstance, DbClient> => {
-        const attr: SequelizeAttributes<DbClient> = {
-            Id : { type: INTEGER, autoIncrement: true, primaryKey: true },
-            ClientId : { type: STRING, },
-            ClientSecret : { type: STRING, },
-            Name : { type: STRING, },
-            RedirectUris : { type: STRING, },
-            Grants: { type: STRING, },
-        };
-        const def = sequelize.define<DbClientInstance, DbClient>('client', attr, { tableName: "Clients"});
-
-        def.associate = models => {
-            def.hasMany(models.accessToken, {as: 'accessTokens', foreignKey: 'IdClient'});
-        };
-
-        return def as any;
+    def.associate = (models) => {
+      def.hasMany(models.accessToken, { as: 'accessTokens', foreignKey: 'IdClient' });
     };
 
-    static getGrants = (client: DbClient): string[]|undefined => {
-        return client.Grants ?
-            client.Grants.split('|') :
-            undefined;
-    };
+    return def as any;
+  }
 
-    // noinspection JSUnusedGlobalSymbols
-    static setGrants = (client: DbClient, grants: string[]): void => {
-        client.Grants = grants.join('|');
-    }
+  public static getGrants = (client: DbClient): string[] | undefined => {
+    return client.Grants ?
+      client.Grants.split('|') :
+      undefined;
+  }
+
+  // noinspection JSUnusedGlobalSymbols
+  public static setGrants = (client: DbClient, grants: string[]): void => {
+    client.Grants = grants.join('|');
+  }
+
+  public ClientId!: string;
+  public ClientSecret?: string;
+  public Name!: string;
+  public RedirectUris?: string;
+  public Grants?: string;
+
+  public accessTokens?: DbAccessToken[] | Array<DbAccessToken['Id']>;
+
 }
 
-export interface DbClientInstance extends Instance<DbClient>, DbClient {
-    getAccessTokens: HasManyGetAssociationsMixin<IDbAccessTokenInstance>;
-    setAccessTokens: HasManySetAssociationsMixin<IDbAccessTokenInstance, IDbAccessTokenInstance['Id']>;
-    addAccessTokens: HasManyAddAssociationsMixin<IDbAccessTokenInstance, IDbAccessTokenInstance['Id']>;
-    addAccessToken: HasManyAddAssociationMixin<IDbAccessTokenInstance, IDbAccessTokenInstance['Id']>;
-    createAccessToken: HasManyCreateAssociationMixin<DbAccessToken, IDbAccessTokenInstance>;
-    removeAccessToken: HasManyRemoveAssociationMixin<IDbAccessTokenInstance, IDbAccessTokenInstance['Id']>;
-    removeAccessTokens: HasManyRemoveAssociationsMixin<IDbAccessTokenInstance, IDbAccessTokenInstance['Id']>;
-    hasAccessToken: HasManyHasAssociationMixin<IDbAccessTokenInstance, IDbAccessTokenInstance['Id']>;
-    hasAccessTokens: HasManyHasAssociationsMixin<IDbAccessTokenInstance, IDbAccessTokenInstance['Id']>;
-    countAccessTokens: HasManyCountAssociationsMixin;
+export interface IDbClientInstance extends Instance<DbClient>, DbClient {
+  getAccessTokens: HasManyGetAssociationsMixin<IDbAccessTokenInstance>;
+  setAccessTokens: HasManySetAssociationsMixin<IDbAccessTokenInstance, IDbAccessTokenInstance['Id']>;
+  addAccessTokens: HasManyAddAssociationsMixin<IDbAccessTokenInstance, IDbAccessTokenInstance['Id']>;
+  addAccessToken: HasManyAddAssociationMixin<IDbAccessTokenInstance, IDbAccessTokenInstance['Id']>;
+  createAccessToken: HasManyCreateAssociationMixin<DbAccessToken, IDbAccessTokenInstance>;
+  removeAccessToken: HasManyRemoveAssociationMixin<IDbAccessTokenInstance, IDbAccessTokenInstance['Id']>;
+  removeAccessTokens: HasManyRemoveAssociationsMixin<IDbAccessTokenInstance, IDbAccessTokenInstance['Id']>;
+  hasAccessToken: HasManyHasAssociationMixin<IDbAccessTokenInstance, IDbAccessTokenInstance['Id']>;
+  hasAccessTokens: HasManyHasAssociationsMixin<IDbAccessTokenInstance, IDbAccessTokenInstance['Id']>;
+  countAccessTokens: HasManyCountAssociationsMixin;
 }
