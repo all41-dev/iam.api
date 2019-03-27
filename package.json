@@ -30,8 +30,8 @@
     "xmlhttprequest": "1.8.0"
   },
   "devDependencies": {
-    "@informaticon/devops.base-microservice": "4.0.1-beta.0",
-    "@informaticon/devops.identity-model": "1.0.1",
+    "@informaticon/devops.base-microservice": "4.0.3",
+    "@informaticon/devops.identity-model": "1.0.3",
     "@types/bcrypt": "3.0.0",
     "@types/bluebird": "3.5.26",
     "@types/csprng": "0.1.1",
@@ -48,9 +48,11 @@
     "jsonwebtoken": "8.5.1",
     "sequelize": "4.43.0",
     "tslint": "5.14.0",
-    "typescript": "3.3.4000"
+    "typescript": "3.2.4"
   },
   "peerDependencies": {
+    "@informaticon/devops.base-microservice": "^4.0.3",
+    "@informaticon/devops.identity-model": "^1.0.3",
     "express": "^4.16.4",
     "jsonwebtoken": "^8.5.1",
     "sequelize": "^4.43.0"
