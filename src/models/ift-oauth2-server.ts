@@ -46,7 +46,7 @@ export class IftOAuth2Server {
                 return resp;
             },
             getClient: (clientId: string, clientSecret: string): Promise<Client|Falsey>|any => {
-                console.info('In getClient OAuth method');
+                console.info(`In getClient OAuth method: ${clientId}`);
 
                 const model = Api.inst.sequelize.models.client as
                     Model<Sequelize.Instance<DbClient>, DbClient>;
@@ -262,10 +262,11 @@ export class IftOAuth2Server {
         try {
 
             let userscope:string = await this.getUserScope(token.user.username);
+            const clientUrl = `${Api.req.protocol}://${Api.req.headers["host"]}`;
             //const jwt = require('jsonwebtoken');
             return Jwt.sign({
-                iss: 'http://localhost:3000', // issuer -> OAuth server (this)
-                cid: 'http://localhost:3000', // granted api
+                iss: clientUrl,// 'http://localhost:3020', // issuer -> OAuth server (this)
+                cid: clientUrl,//'http://localhost:3001', // granted api
                 aud: token.client.id,
                 sub: token.user.id,
                 username: token.user.username,
