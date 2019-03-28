@@ -1,9 +1,13 @@
 {
-    "defaultSeverity": "error",
-    "extends": [
-        "tslint:recommended"
-    ],
-    "jsRules": {},
-    "rules": {},
-    "rulesDirectory": []
+  "defaultSeverity": "error",
+  "extends": "./node_modules/tslint/lib/configs/recommended",
+  "jsRules": {},
+  "rules": {
+    "quotemark": [true, "single", "avoid-escape", "avoid-template"],
+    "variable-name": [true, "allow-leading-underscore", "allow-pascal-case"],
+    "no-console": false,
+    "max-classes-per-file": false,
+    "max-line-length": [true, 150]
+  },
+  "rulesDirectory": []
 }
