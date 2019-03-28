@@ -22,7 +22,7 @@ export class DbSetPasswordToken extends DbEntity {
       Message: { type: STRING },
       TokenHash: { type: STRING },
     };
-    const def = sequelize.define<IDbSetPasswordTokenInstance, DbSetPasswordToken>('dbSetPasswordToken', attr, { tableName: 'SetPasswordTokens' });
+    const def = sequelize.define<IDbSetPasswordTokenInstance, DbSetPasswordToken>('setPasswordToken', attr, { tableName: 'SetPasswordTokens' });
 
     def.associate = (models) => {
       def.belongsTo(models.user, { as: 'user', foreignKey: 'IdUser' });
