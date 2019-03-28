@@ -3,7 +3,7 @@ import { NextFunction, Request, Response, Router } from 'express';
 import { FindOptions, Instance, Model } from 'sequelize';
 import { Api } from '../api';
 import { EntitySetPasswordToken } from '../models/business/entity-set-password-token';
-import { DbSetPasswordToken } from '../models/db/db-set-password-token';
+import { DbSetPasswordToken, IDbSetPasswordTokenInstance } from '../models/db/db-set-password-token';
 
 export class SetPasswordTokenController extends ControllerBase {
 
@@ -78,8 +78,8 @@ export class SetPasswordTokenController extends ControllerBase {
     }
   }
 
-  private static getModel(): Model<Instance<DbSetPasswordToken>, DbSetPasswordToken> {
-    return Api.inst.sequelize.models.setPasswordToken as Model<Instance<DbSetPasswordToken>, DbSetPasswordToken>;
+  private static getModel(): Model<IDbSetPasswordTokenInstance, DbSetPasswordToken> {
+    return Api.inst.sequelize.models.setPasswordToken as Model<IDbSetPasswordTokenInstance, DbSetPasswordToken>;
   }
 
   constructor() {
