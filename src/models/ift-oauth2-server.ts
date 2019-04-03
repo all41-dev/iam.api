@@ -95,7 +95,7 @@ export class IftOAuth2Server {
       },
       saveToken: (token: Token, client: Client, user: User): any => {
         console.info('In saveToken OAuth method');
-        const model = Api.inst.sequelize.models.dbAccessToken as
+        const model = Api.inst.sequelize.models.accessToken as
           Model<Sequelize.Instance<DbAccessToken>, DbAccessToken>;
         const resp = model.findOne({
           include: [
@@ -328,6 +328,7 @@ export class IftOAuth2Server {
       console.log('/n/n/n mail:' + mail + '/n/n/n');
       const xhr = new XMLHttpRequest();
       xhr.open('get', `http://localhost:3001/api/users/${mail}/permissions`, true);
+      xhr.setRequestHeader('Accept', 'application/json, text/plain, */*');
       xhr.onload = () => {
         if (xhr.status !== 200) {
           reject(xhr.statusText);
