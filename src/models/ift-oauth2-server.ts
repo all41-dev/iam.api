@@ -327,8 +327,7 @@ export class IftOAuth2Server {
     return new Promise((resolve, reject) => {
       console.log('/n/n/n mail:' + mail + '/n/n/n');
       const xhr = new XMLHttpRequest();
-      xhr.open('get', `http://localhost:3001/api/users/${mail}/permissions`, true);
-      xhr.setRequestHeader('Accept', 'application/json, text/plain, */*');
+      xhr.open('get', `${Api.accessMsRootUrl}/api/users/${mail}/permissions`, true);
       xhr.onload = () => {
         if (xhr.status !== 200) {
           reject(xhr.statusText);
