@@ -275,7 +275,10 @@ export class IftOAuth2Server {
     try {
 
       const userscope: string = await this.getUserScope(token.user.username);
-      const clientUrl = `${Api.req.protocol}://${Api.req.headers["host"]}`;
+      const host = Api.req.headers["host"];
+      const protocol = !host || host.startsWith('localhost') ? 'http' : 'https';
+      const clientUrl = `${protocol}://${host}`;
+      
       return Jwt.sign({
         iss: clientUrl, //'http://localhost:3000', // issuer -> OAuth server (this)
         // tslint:disable-next-line: object-literal-sort-keys
