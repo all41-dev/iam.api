@@ -161,11 +161,13 @@ export class EntitySetPasswordToken extends Entity<DbSetPasswordToken, SetPasswo
       secure: false,
     });
 
+    const link = `https://${Api.req.get('host')}/change-password/${t.TokenHash}`;
+
     return smtp.sendMail({
       from: 'user-management@informaticon.com',
-      html: `${t.Message}<a href="http://localhost:4201/change-password/${t.TokenHash}">change your password</a>`,
-      subject: 'Informaticon microservice password change',
-      text: `${t.Message}\nhttp://localhost:4201/change-password/${t.TokenHash}`,
+      html: `<strong>${t.Message}</strong><br><a href="${link}">change your password</a>`,
+      subject: 'Change your Informaticon devops password',
+      text: `${t.Message}\n${link}`,
       to: user.Email,
     });
   }
