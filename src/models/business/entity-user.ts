@@ -100,7 +100,7 @@ export class EntityUser extends Entity<DbUser, User> {
     if (usr.Id === undefined) {
       throw new Error('Db user without Id');
     }
-    new EntitySetPasswordToken().createSetPasswordToken(usr.Id, 'create user message -> tbd');
+    new EntitySetPasswordToken().createSetPasswordToken(usr.Id, 'Your account has been created, please set your password to enable it.');
     return user;
   }
 

@@ -41,6 +41,9 @@ export class SetPasswordTokenController extends ControllerBase {
 
   // noinspection JSUnusedLocalSymbols, JSMethodCanBeStatic
   public static post(req: Request, res: Response, next: NextFunction) {
+    Api.req = req;
+    Api.res = res;
+
     const entity = new EntitySetPasswordToken();
 
     try {
