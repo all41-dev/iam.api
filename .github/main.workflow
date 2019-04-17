@@ -1,4 +1,3 @@
-
 # workflows
 workflow "On release" {
   on = "release"
@@ -57,4 +56,3 @@ action "GitHub Action on release" {
     SLACK_CHANNEL = "#devops"
   }
 }
-
