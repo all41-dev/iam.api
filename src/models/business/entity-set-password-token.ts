@@ -146,14 +146,14 @@ export class EntitySetPasswordToken extends Entity<DbSetPasswordToken, SetPasswo
     }
 
     const smtp = NodeMailer.createTransport({
-        port: 465,//587,
-        host: 'smtp-relay.gmail.com',
-        secure: true,
-        auth: {
-          pass: process.env.SMTP_PASSWORD,
-          user: 'bot@informaticon.com',
-        },
-  });
+      auth: {
+        pass: process.env.SMTP_PASSWORD,
+        user: 'bot@informaticon.com',
+      },
+      host: 'smtp-relay.gmail.com',
+      port: 465, // 587,
+      secure: true,
+    });
     // For execution outside of Informaticon's network
     // const smtp = NodeMailer.createTransport({
     //   auth: {

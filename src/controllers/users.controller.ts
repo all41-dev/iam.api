@@ -194,6 +194,7 @@ export class UsersController extends ControllerBase {
         throw new Error('user not found');
       }
       const eu = new EntitySetPasswordToken();
+      // tslint:disable-next-line: max-line-length
       eu.createSetPasswordToken(user[0].Id, 'You have requested to reset you password for Informaticon Devops, please click the link below to proceed. If you didn\'t request this, you can ignore this e-mail.');
     });
   }
