@@ -20,10 +20,10 @@ export class UsersController extends ControllerBase {
     router.get('/', UsersController.checkAccess(['Access/Read', 'Microservices/Identity-Service/Users']), UsersController.getAll);
     router.get('/:id', UsersController.checkAccess(['Access/Read', 'Microservices/Identity-Service/Users']), UsersController.getById);
 // tslint:disable-next-line: max-line-length
-    router.get('/from-token/:token', UsersController.checkAccess(['Access/Read', 'Microservices/Identity-Service/Users']), UsersController.getFromToken);
+    router.get('/from-token/:token', UsersController.getFromToken);
     router.post('/authenticate', UsersController.authenticate);
 // tslint:disable-next-line: max-line-length
-    router.patch('/change-password/:token', UsersController.checkAccess(['Access/Update', 'Microservices/Identity-Service/Users/Password']), UsersController.changePassword);
+    router.patch('/change-password/:token', UsersController.changePassword);
     router.post('/', UsersController.checkAccess(['Access/Create', 'Microservices/Identity-Service/Users']), UsersController.post);
     router.patch('/:id', UsersController.checkAccess(['Access/Update', 'Microservices/Identity-Service/Users']), UsersController.update);
     router.delete('/:id', UsersController.checkAccess(['Access/Delete', 'Microservices/Identity-Service/Users']), UsersController.remove);
@@ -135,6 +135,8 @@ export class UsersController extends ControllerBase {
   }
 
   public static post(req: Request, res: Response, next: NextFunction) {
+    Api.req = req;
+    Api.res = res;
     const entity = new EntityUser();
 
     try {
@@ -192,7 +194,7 @@ export class UsersController extends ControllerBase {
         throw new Error('user not found');
       }
       const eu = new EntitySetPasswordToken();
-      eu.createSetPasswordToken(user[0].Id, 'lost password message -> tbd');
+      eu.createSetPasswordToken(user[0].Id, 'You have requested to reset you password for Informaticon Devops, please click the link below to proceed. If you didn\'t request this, you can ignore this e-mail.');
     });
   }
 

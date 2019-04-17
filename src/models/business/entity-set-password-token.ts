@@ -145,27 +145,33 @@ export class EntitySetPasswordToken extends Entity<DbSetPasswordToken, SetPasswo
       throw new Error('user not found from setPasswordToken');
     }
 
-    // const smtp = NodeMailer.createTransport({
-    //     port: 465,//587,
-    //     host: 'smtp-relay.gmail.com',
-    //     secure: true,
-    // });
-    // For execution outside of Informaticon's network
     const smtp = NodeMailer.createTransport({
-      auth: {
-        pass: 'xdqFyu0CH5VB',
-        user: 'app@harps.ch',
-      },
-      host: 'mail.infomaniak.com',
-      port: 587,
-      secure: false,
-    });
+        port: 465,//587,
+        host: 'smtp-relay.gmail.com',
+        secure: true,
+        auth: {
+          pass: process.env.SMTP_PASSWORD,
+          user: 'bot@informaticon.com',
+        },
+  });
+    // For execution outside of Informaticon's network
+    // const smtp = NodeMailer.createTransport({
+    //   auth: {
+    //     pass: process.env.SMTP_PASSWORD,
+    //     user: 'app@harps.ch',
+    //   },
+    //   host: 'mail.infomaniak.com',
+    //   port: 587,
+    //   secure: false,
+    // });
+
+    const link = `https://${Api.req.get('host')}/change-password/${t.TokenHash}`;
 
     return smtp.sendMail({
-      from: 'user-management@informaticon.com',
-      html: `${t.Message}<a href="http://localhost:4201/change-password/${t.TokenHash}">change your password</a>`,
-      subject: 'Informaticon microservice password change',
-      text: `${t.Message}\nhttp://localhost:4201/change-password/${t.TokenHash}`,
+      from: 'no-reply@informaticon.com',
+      html: `<strong>${t.Message}</strong><br><a href="${link}">change your password</a>`,
+      subject: 'Change your Informaticon devops password',
+      text: `${t.Message}\n${link}`,
       to: user.Email,
     });
   }

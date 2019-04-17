@@ -21,7 +21,9 @@ export class OAuthController extends ControllerBase {
 
   // noinspection JSUnusedLocalSymbols, JSMethodCanBeStatic
   public static getConfig(req: Request, res: Response, next: NextFunction) {
-    const apiHost = req.protocol + '://' + req.get('host'); // + req.originalUrl;
+    const host = req.get('host');
+    const protocol = !host || host.startsWith('localhost') ? 'http' : 'https';
+    const apiHost = protocol + '://' + host; // + req.originalUrl;
 
     res.json({
       issuer: apiHost, // "http://localhost:1212",

@@ -95,7 +95,7 @@ export class IftOAuth2Server {
       },
       saveToken: (token: Token, client: Client, user: User): any => {
         console.info('In saveToken OAuth method');
-        const model = Api.inst.sequelize.models.dbAccessToken as
+        const model = Api.inst.sequelize.models.accessToken as
           Model<Sequelize.Instance<DbAccessToken>, DbAccessToken>;
         const resp = model.findOne({
           include: [
@@ -275,11 +275,14 @@ export class IftOAuth2Server {
     try {
 
       const userscope: string = await this.getUserScope(token.user.username);
-      // const jwt = require('jsonwebtoken');
+      const host = Api.req.headers["host"];
+      const protocol = !host || host.startsWith('localhost') ? 'http' : 'https';
+      const clientUrl = `${protocol}://${host}`;
+      
       return Jwt.sign({
-        iss: 'http://localhost:3000', // issuer -> OAuth server (this)
+        iss: clientUrl, //'http://localhost:3000', // issuer -> OAuth server (this)
         // tslint:disable-next-line: object-literal-sort-keys
-        cid: 'http://localhost:3000', // granted api
+        cid: clientUrl, // 'http://localhost:3000', // granted api
         aud: token.client.id,
         sub: token.user.id,
         username: token.user.username,
@@ -327,7 +330,7 @@ export class IftOAuth2Server {
     return new Promise((resolve, reject) => {
       console.log('/n/n/n mail:' + mail + '/n/n/n');
       const xhr = new XMLHttpRequest();
-      xhr.open('get', `http://localhost:3001/api/users/${mail}/permissions`, true);
+      xhr.open('get', `${Api.accessMsRootUrl}/api/users/${mail}/permissions`, true);
       xhr.onload = () => {
         if (xhr.status !== 200) {
           reject(xhr.statusText);

@@ -12,8 +12,12 @@ import { DbUser } from './models/db/db-user';
 export class Api extends ApiBase {
   public static req: Request;
   public static res: Response;
+  public static accessMsRootUrl: string;
 
   public init(options: IApiOptions) {
+    if (options && options.config) {
+      Api.accessMsRootUrl = (options.config as any).accessMsRootUrl;
+    }
     this.sequelizeInit(options.sequelize, {
       accessToken: DbAccessToken,
       client: DbClient,

@@ -27,7 +27,7 @@ export class DbAccessToken extends DbEntity {
       Scopes: { type: STRING },
       TokenValue: { type: STRING },
     };
-    const def = sequelize.define<IDbAccessTokenInstance, DbAccessToken>('dbAccessToken', attr, { tableName: 'AccessTokens' });
+    const def = sequelize.define<IDbAccessTokenInstance, DbAccessToken>('accessToken', attr, { tableName: 'AccessTokens' });
 
     def.associate = (models) => {
       def.belongsTo(models.user, { as: 'user', foreignKey: 'IdUser' });
