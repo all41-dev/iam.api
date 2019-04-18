@@ -7,8 +7,8 @@ create table Clients
 	Name varchar(100) not null,
 	RedirectUris text,
 	Grants text,
-	CreatedAt timestamp default current_timestamp() not null on update current_timestamp(),
-	UpdatedAt timestamp default '0000-00-00 00:00:00' not null,
+	CreatedAt timestamp null,
+	UpdatedAt timestamp null,
 	constraint Clients_ClientId_uindex
 		unique (ClientId),
 	constraint Clients_ClientSecret_uindex
@@ -37,8 +37,8 @@ create table AccessTokens
 	Scopes text null,
 	IdClient int not null,
 	IdUser int not null,
-	CreatedAt timestamp default '0000-00-00 00:00:00' not null,
-	UpdatedAt timestamp default '0000-00-00 00:00:00' not null,
+	CreatedAt timestamp null,
+	UpdatedAt timestamp null,
 	constraint AccessTokens_Clients_Id_fk
 		foreign key (IdClient) references Clients (Id),
 	constraint AccessTokens_Users_Id_fk
@@ -52,8 +52,8 @@ create table SetPasswordTokens
 	IdUser int null,
 	Message varchar(2000) null,
 	Expires timestamp default current_timestamp() not null on update current_timestamp(),
-	CreatedAt timestamp default '0000-00-00 00:00:00' not null,
-	UpdatedAt timestamp default '0000-00-00 00:00:00' not null,
+	CreatedAt timestamp null,
+	UpdatedAt timestamp null,
 	TokenHash varchar(200) not null,
 	constraint SetPasswordTokens_Users_Id_fk
 		foreign key (IdUser) references Users (Id)
