@@ -3,7 +3,7 @@ create table Clients
 	Id int auto_increment
 		primary key,
 	ClientId varchar(80) not null,
-	ClientSecret varchar(80) not null,
+	ClientSecret varchar(80) null,
 	Name varchar(100) not null,
 	RedirectUris text,
 	Grants text,
