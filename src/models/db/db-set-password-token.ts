@@ -1,51 +1,32 @@
-import { DbEntity, SequelizeAttributes } from '@informaticon/devops.base-microservice';
-import {
-  BelongsToCreateAssociationMixin,
-  BelongsToGetAssociationMixin,
-  BelongsToSetAssociationMixin,
-  DATE,
-  Instance,
-  INTEGER,
-  Model,
-  Sequelize,
-  STRING,
-} from 'sequelize';
-import { DbUser, IDbUserInstance } from './db-user';
+import { AutoIncrement, Column, DataType, Model, PrimaryKey, Table, AllowNull, BelongsTo, ForeignKey } from 'sequelize-typescript';
+import { DbUser } from './db-user';
 
-export class DbSetPasswordToken extends DbEntity {
+// @dbEntity
+@Table({ modelName: 'exchange', tableName: 'Exchange' })
+export class DbSetPasswordToken extends Model<DbSetPasswordToken> {
 
-  public static factory = (sequelize: Sequelize): Model<IDbSetPasswordTokenInstance, DbSetPasswordToken> => {
-    const attr: SequelizeAttributes<DbSetPasswordToken> = {
-      Expires: { type: DATE },
-      Id: { type: INTEGER, autoIncrement: true, primaryKey: true },
-      IdUser: { type: INTEGER },
-      Message: { type: STRING },
-      TokenHash: { type: STRING },
-    };
-    const def = sequelize.define<IDbSetPasswordTokenInstance, DbSetPasswordToken>('setPasswordToken', attr, { tableName: 'SetPasswordTokens' });
+  @PrimaryKey
+  @AutoIncrement
+  @Column(DataType.INTEGER)
+  public Id?: number;
 
-    def.associate = (models) => {
-      def.belongsTo(models.user, { as: 'user', foreignKey: 'IdUser' });
-    };
+  @ForeignKey((): typeof Model => DbUser)
+  @AllowNull
+  @Column(DataType.INTEGER)
+  IdUser?: number;
 
-    return def as any;
-  }
+  @AllowNull(false)
+  @Column(DataType.DATE)
+  Expires!: Date;
 
-  // @ForeignKey(() => DbUser)
-  public IdUser!: number;
-  public Message!: string;
-  public Expires!: Date;
-  public TokenHash!: string;
+  @AllowNull
+  @Column(DataType.STRING(2000))
+  Message?: string;
 
-  public user?: DbUser | DbUser['Id'];
+  @AllowNull(false)
+  @Column(DataType.STRING(200))
+  TokenHash!: string;
 
-  // public CreatedAt: number | undefined;// timestamp
-  // public UpdatedAt: number | undefined// timestamp
-
-}
-
-export interface IDbSetPasswordTokenInstance extends Instance<DbSetPasswordToken>, DbSetPasswordToken {
-  getUser: BelongsToGetAssociationMixin<IDbUserInstance>;
-  setUser: BelongsToSetAssociationMixin<IDbUserInstance, IDbUserInstance['Id']>;
-  createUser: BelongsToCreateAssociationMixin<DbUser, IDbUserInstance>;
+  @BelongsTo((): typeof Model => DbUser)
+  public User?: DbUser;
 }

@@ -1,58 +1,40 @@
-import { DbEntity, SequelizeAttributes } from '@informaticon/devops.base-microservice';
-import {
-  BelongsToCreateAssociationMixin,
-  BelongsToGetAssociationMixin,
-  BelongsToSetAssociationMixin,
-  DATE,
-  Instance,
-  INTEGER,
-  Model,
-  Sequelize,
-  STRING,
-} from 'sequelize';
-import { DbClient, IDbClientInstance } from './db-client';
-import { DbUser, IDbUserInstance } from './db-user';
+import { AutoIncrement, Column, DataType, Model, PrimaryKey, Table, AllowNull, BelongsTo, ForeignKey } from 'sequelize-typescript';
+import { DbClient } from './db-client';
+import { DbUser } from './db-user';
 
-export class DbAccessToken extends DbEntity {
+// @dbEntity
+@Table({ modelName: 'exchange', tableName: 'Exchange' })
+export class DbAccessToken extends Model<DbAccessToken> {
+    @PrimaryKey
+    @AutoIncrement
+    @Column(DataType.INTEGER)
+    public Id?: number;
 
-  // public CreatedAt: number | undefined;// timestamp
-  // public UpdatedAt: number | undefined// timestamp
+    @ForeignKey((): typeof Model => DbClient)
+    @AllowNull(false)
+    @Column(DataType.INTEGER)
+    IdClient!: number;
 
-  public static factory = (sequelize: Sequelize): Model<IDbAccessTokenInstance, DbAccessToken> => {
-    const attr: SequelizeAttributes<DbAccessToken> = {
-      ExpiresAt: { type: DATE }, // todo refactor type
-      Id: { type: INTEGER, autoIncrement: true, primaryKey: true },
-      IdClient: { type: INTEGER },
-      IdUser: { type: INTEGER },
-      Scopes: { type: STRING },
-      TokenValue: { type: STRING },
-    };
-    const def = sequelize.define<IDbAccessTokenInstance, DbAccessToken>('accessToken', attr, { tableName: 'AccessTokens' });
+    @ForeignKey((): typeof Model => DbUser)
+    @AllowNull(false)
+    @Column(DataType.INTEGER)
+    IdUser!: number;
 
-    def.associate = (models) => {
-      def.belongsTo(models.user, { as: 'user', foreignKey: 'IdUser' });
-      def.belongsTo(models.client, { as: 'client', foreignKey: 'IdClient' });
-    };
+    @AllowNull
+    @Column(DataType.TEXT)
+    Scopes?: string;
 
-    return def as any;
-  }
+    @AllowNull(false)
+    @Column(DataType.STRING(256))
+    TokenValue!: string;
 
-  public IdUser!: number;
-  public IdClient!: number;
-  public TokenValue!: string;
-  public ExpiresAt!: Date;
-  public Scopes!: string;
+    @AllowNull(false)
+    @Column(DataType.DATE)
+    ExpiresAt!: Date;
 
-  public user?: DbUser | DbUser['Id'];
-  public client?: DbClient | DbClient['Id'];
-}
+    @BelongsTo((): typeof Model => DbClient)
+    public Client?: DbClient;
 
-export interface IDbAccessTokenInstance extends Instance<DbAccessToken>, DbAccessToken {
-  getUser: BelongsToGetAssociationMixin<IDbUserInstance>;
-  setUser: BelongsToSetAssociationMixin<IDbUserInstance, IDbUserInstance['Id']>;
-  createUser: BelongsToCreateAssociationMixin<DbUser, IDbUserInstance>;
-
-  getClient: BelongsToGetAssociationMixin<IDbClientInstance>;
-  setClient: BelongsToSetAssociationMixin<IDbClientInstance, IDbClientInstance['Id']>;
-  createClient: BelongsToCreateAssociationMixin<DbClient, IDbClientInstance>;
+    @BelongsTo((): typeof Model => DbUser)
+    public User?: DbUser;
 }

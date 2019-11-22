@@ -1,56 +1,49 @@
-import { Entity } from '@informaticon/devops.base-microservice';
-import { SetPasswordToken } from '@informaticon/devops.identity-model';
+import { Entity } from '@harps/server';
+import { SetPasswordToken } from '@harps/iam.identity-model';
 import * as crypto from 'crypto';
 import { Request } from 'express';
 import * as NodeMailer from 'nodemailer';
-import { FindOptions } from 'sequelize';
+import { FindOptions, DestroyOptions } from 'sequelize';
 import * as Sequelize from 'sequelize';
-import { Api } from '../../api';
-import { DbSetPasswordToken, IDbSetPasswordTokenInstance } from '../db/db-set-password-token';
+import { DbSetPasswordToken } from '../db/db-set-password-token';
+import { DbUser } from '../db/db-user';
 
 export class EntitySetPasswordToken extends Entity<DbSetPasswordToken, SetPasswordToken> {
+  public constructor() {
+    super(DbSetPasswordToken);
+  }
   public tokenDurationSec = 3600 * 24; // 1 day
 
-  public setIncludes(includePaths: string[], options: FindOptions<DbSetPasswordToken>): void {
+  public setIncludes(includePaths: string[]): void {
     //
   }
 
   // noinspection JSMethodCanBeStatic
-  public setFilter(req: Request, options: FindOptions<DbSetPasswordToken>): void {
+  public setFilter(req: Request): void {
     const filter: string | undefined = req.query.filter;
     if (filter !== undefined) {
-      options.where = {
+      this._findOptions.where = {
         // Email: {[UsersApi.inst.sequelize.Op.like]: `%${filter}%`}
       };
     }
   }
 
   // noinspection JSMethodCanBeStatic
-  public async dbToClient(inst: IDbSetPasswordTokenInstance): Promise<SetPasswordToken> {
-    const dbObj = inst.get();
+  public async dbToClient(inst: DbSetPasswordToken): Promise<SetPasswordToken> {
     return new SetPasswordToken(
-      dbObj.Id,
-      dbObj.IdUser,
-      dbObj.Message,
-      dbObj.Expires,
-      dbObj.TokenHash,
+      inst.Id,
+      inst.IdUser,
+      inst.Message,
+      inst.Expires,
+      inst.TokenHash,
     );
   }
 
   // noinspection JSMethodCanBeStatic
-  public jsonToClient(obj: any): SetPasswordToken {
-    return new SetPasswordToken(
-      obj.id === undefined ? null : obj.id,
-      obj.idUser === undefined ? undefined : obj.idUser,
-      obj.message === undefined ? undefined : obj.message,
-      obj.expires === undefined ? undefined : obj.expires,
-      obj.tokenHash === undefined ? undefined : obj.tokenHash,
-    );
-  }
-
-  // noinspection JSMethodCanBeStatic
-  public clientToDb(clientObj: SetPasswordToken): DbSetPasswordToken {
-    const obj = new DbSetPasswordToken();
+  public async clientToDb(clientObj: SetPasswordToken): Promise<DbSetPasswordToken> {
+    const obj = clientObj.id ?
+      (await DbSetPasswordToken.findOrBuild({ where: { Id: clientObj.id } }))[0] :
+      new DbSetPasswordToken();
 
     if (clientObj.id !== null) {
       obj.Id = clientObj.id;
@@ -75,7 +68,7 @@ export class EntitySetPasswordToken extends Entity<DbSetPasswordToken, SetPasswo
     spt.expires = dt;
     return spt;
   }
-  public async postCreation(inst: IDbSetPasswordTokenInstance): Promise<IDbSetPasswordTokenInstance> {
+  public async postCreation(inst: DbSetPasswordToken): Promise<DbSetPasswordToken> {
     await this.notifyUser(inst);
     return inst;
   }
@@ -102,7 +95,7 @@ export class EntitySetPasswordToken extends Entity<DbSetPasswordToken, SetPasswo
    * Wording of the email will change whether the token is for a new user or a lost password
    */
   public createSetPasswordToken = (userId: number, message: string) => {
-    Api.inst.sequelize.models.setPasswordToken.findAll({ where: { expires: { [Sequelize.Op.lt]: new Date() } } })
+    DbSetPasswordToken.findAll({ where: { expires: { [Sequelize.Op.lt]: new Date() } } })
       .then((spts: any) => {
         // delete expired tokens for all users
         for (const spt of spts) {
@@ -114,7 +107,7 @@ export class EntitySetPasswordToken extends Entity<DbSetPasswordToken, SetPasswo
         //    user.setPasswordTokens = [];
         // }
 
-        Api.inst.sequelize.models.setPasswordToken.findAll({ where: { idUser: userId } }).then((spt: DbSetPasswordToken[]) => {
+        DbSetPasswordToken.findAll({ where: { idUser: userId } }).then((spt: DbSetPasswordToken[]) => {
           if (spt !== null && spt !== undefined && spt.length > 0) {
             token = spt[0];
           } else {
@@ -133,14 +126,14 @@ export class EntitySetPasswordToken extends Entity<DbSetPasswordToken, SetPasswo
             } as DbSetPasswordToken;
           }
 
-          Api.inst.sequelize.models.setPasswordToken.create(token).then((t) => this.notifyUser(t));
+          DbSetPasswordToken.create(token).then((t) => this.notifyUser(t));
         });
       });
   }
 
-  public notifyUser = async (t: IDbSetPasswordTokenInstance): Promise<void> => {
+  public notifyUser = async (t: DbSetPasswordToken): Promise<void> => {
     // send email to user
-    const user = await t.getUser();
+    const user = await DbUser.findOne({ where: { Id: t.IdUser! }});
     if (user === null) {
       throw new Error('user not found from setPasswordToken');
     }
@@ -165,7 +158,9 @@ export class EntitySetPasswordToken extends Entity<DbSetPasswordToken, SetPasswo
     //   secure: false,
     // });
 
-    const link = `https://${Api.req.get('host')}/change-password/${t.TokenHash}`;
+    // to be configured with env var
+    const baseUrl = 'localhost:8080';
+    const link = `https://${baseUrl}/change-password/${t.TokenHash}`;
 
     return smtp.sendMail({
       from: 'no-reply@informaticon.com',
@@ -174,5 +169,11 @@ export class EntitySetPasswordToken extends Entity<DbSetPasswordToken, SetPasswo
       text: `${t.Message}\n${link}`,
       to: user.Email,
     });
+  }
+  protected async dbFindAll(options: FindOptions): Promise<DbSetPasswordToken[]> {
+    return DbSetPasswordToken.findAll(options);
+  }
+  protected dbDestroy(options: DestroyOptions): Promise<number> {
+    return Promise.resolve(DbSetPasswordToken.destroy(options));
   }
 }

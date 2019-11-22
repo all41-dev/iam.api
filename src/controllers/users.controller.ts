@@ -1,4 +1,4 @@
-import { ControllerBase } from '@informaticon/devops.base-microservice';
+import { ControllerBase } from '@harps/server';
 import * as Bcrypt from 'bcrypt';
 import { NextFunction, Request, Response, Router } from 'express';
 import { FindOptions, Instance, Model } from 'sequelize';

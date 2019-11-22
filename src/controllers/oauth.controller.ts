@@ -1,4 +1,4 @@
-import { ControllerBase } from '@informaticon/devops.base-microservice';
+import { ControllerBase } from '@harps/server';
 import { NextFunction, Request, Response, Router } from 'express';
 
 export class OAuthController extends ControllerBase {
