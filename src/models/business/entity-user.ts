@@ -1,22 +1,22 @@
-import { Entity } from '@informaticon/devops.base-microservice';
-import { User } from '@informaticon/devops.identity-model';
-import Bluebird = require('bluebird');
-import { Request, Response } from 'express';
-import { DestroyOptions, FindOptions, Instance, Model } from 'sequelize';
-import { Api } from '../../api';
-import { DbSetPasswordToken, IDbSetPasswordTokenInstance } from '../db/db-set-password-token';
-import { DbUser, IDbUserInstance } from '../db/db-user';
+import { Entity } from '@harps/server';
+import { User } from '@harps/iam.identity-model';
+import { Response } from 'express';
+import { DestroyOptions, FindOptions, Model, Op } from 'sequelize';
+import { DbSetPasswordToken } from '../db/db-set-password-token';
+import { DbUser } from '../db/db-user';
 import { EntitySetPasswordToken } from './entity-set-password-token';
 
 export class EntityUser extends Entity<DbUser, User> {
-
+  public constructor() {
+    super(DbUser);
+  }
   public static emailIsValid = (email: string | undefined) => {
     // tslint:disable-next-line: max-line-length
     const re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
     return email === undefined ? false : re.test(email);
   }
 
-  public static userExists(email: string | undefined): Bluebird<boolean> {
+  public static async userExists(email: string | undefined): Promise<boolean> {
     if (email === undefined) {
       throw new Error('No email address provided (undefined)');
     }
@@ -25,30 +25,30 @@ export class EntityUser extends Entity<DbUser, User> {
         email,
       },
     };
-
-    return Api.inst.sequelize.models.user.count(options).then((nb: number) => nb > 0);
+    // TODO check if this works
+    const res = await DbUser.count(options).then((nb) => (nb as any) > 0);
+    return res;
   }
 
-  public setIncludes(includePaths: string[], options: FindOptions<DbUser>): void {
+  public setIncludes(includePaths: string[]): void {
     //
   }
 
   // noinspection JSMethodCanBeStatic
-  public setFilter(req: Request, options: FindOptions<DbUser>): void {
-    const filter: string | undefined = req.query.filter;
+  public setFilter(filter?: string): void {
+    // const filter: string | undefined = req.query.filter;
     if (filter !== undefined) {
-      options.where = {
-        Email: { [Api.inst.sequelize.Op.like]: `%${filter}%` },
+      this._findOptions.where = {
+        Email: { [Op.like]: `%${filter}%` },
       };
     }
   }
 
   // noinspection JSMethodCanBeStatic
-  public async dbToClient(dbInst: IDbUserInstance): Promise<User> {
-    const dbObj = dbInst.get();
+  public async dbToClient(dbInst: DbUser): Promise<User> {
     return new User(
-      dbObj.Id,
-      dbObj.Email,
+      dbInst.Id,
+      dbInst.Email,
     );
   }
 
@@ -63,13 +63,12 @@ export class EntityUser extends Entity<DbUser, User> {
   }
 
   // noinspection JSMethodCanBeStatic
-  public clientToDb(clientObj: User): DbUser {
-    const obj = new DbUser();
+  public async clientToDb(clientObj: User): Promise<DbUser> {
+    const obj = clientObj.id ?
+      (await DbUser.findOrBuild({ where: { Id: clientObj.id } }))[0]:
+      new DbUser();
 
-    if (clientObj.id !== null) {
-      obj.Id = clientObj.id;
-    }
-
+    if (!clientObj.email) { throw new Error('email must be set'); }
     obj.Email = clientObj.email;
 
     // Set through the password update process
@@ -95,12 +94,11 @@ export class EntityUser extends Entity<DbUser, User> {
     });
     return user;
   }
-  public async postCreation(user: IDbUserInstance): Promise<IDbUserInstance> {
-    const usr = user.get();
-    if (usr.Id === undefined) {
+  public async postCreation(user: DbUser): Promise<DbUser> {
+    if (user.Id === undefined) {
       throw new Error('Db user without Id');
     }
-    new EntitySetPasswordToken().createSetPasswordToken(usr.Id, 'Your account has been created, please set your password to enable it.');
+    new EntitySetPasswordToken().createSetPasswordToken(user.Id, 'Your account has been created, please set your password to enable it.');
     return user;
   }
 
@@ -114,25 +112,37 @@ export class EntityUser extends Entity<DbUser, User> {
 
   public async preDelete(id: number): Promise<number> {
     const options: DestroyOptions = { where: { IdUser: id } };
-    return Api.inst.sequelize.models.setPasswordToken.destroy(options);
+    return DbSetPasswordToken.destroy(options);
+  }
+  public async getByPk(pk: any): Promise<User> {
+    return this.dbFindByPk(pk).then((res) => {
+      if (res) {
+        return this.dbToClient(res)
+      }
+      throw new Error('User not found');
+    })
+  }
+  protected async dbFindByPk(pk: any): Promise<DbUser|null> {
+    return DbUser.findByPk(pk);
   }
 
-  public doGetFromToken(
-    model: Model<Instance<DbSetPasswordToken>, DbSetPasswordToken>,
-    options: FindOptions<DbSetPasswordToken>, res: Response) {
+  public doGetFromToken(options: FindOptions, res: Response) {
 
-    model.find(options).then((spt: Instance<DbSetPasswordToken> | null) => {
-      const token = spt as IDbSetPasswordTokenInstance;
+    DbSetPasswordToken.findOne(options).then(async (spt: DbSetPasswordToken | null) => {
+      const token = spt as DbSetPasswordToken;
       if (token === null) {
         res.json('The provided token is not valid.');
       } else {
-        token.getUser().then(async (usr: IDbUserInstance | null) => {
-          if (usr === null) {
-            throw new Error('user not found');
-          }
+        if(!token.User) {throw new Error('User not set in token, include was probably missing in query'); }
+        const usr = token.User
           res.json([await this.dbToClient(usr)]);
-        });
       }
     });
+  }
+  protected async dbFindAll(options: FindOptions): Promise<DbUser[]> {
+    return DbUser.findAll(options);
+  }
+  protected dbDestroy(options: DestroyOptions): Promise<number> {
+    return Promise.resolve(DbUser.destroy(options));
   }
 }

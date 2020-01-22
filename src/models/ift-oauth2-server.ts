@@ -2,12 +2,12 @@ import * as Bcrypt from 'bcrypt';
 import ExpressOAuthServer = require('express-oauth-server');
 import * as Jwt from 'jsonwebtoken';
 import { AuthorizationCode, Client, Falsey, Token, User } from 'oauth2-server';
-import { Model } from 'sequelize';
-import * as Sequelize from 'sequelize';
-import { Api } from '../api';
+import { Op } from 'sequelize';
+import { IdentityApi } from '../api';
 import { UsersController } from '../controllers/users.controller';
 import { DbAccessToken } from './db/db-access-token';
 import { DbClient } from './db/db-client';
+import { DbUser } from './db/db-user';
 
 // tslint:disable-next-line: no-var-requires
 const XMLHttpRequest = require('xmlhttprequest').XMLHttpRequest;
@@ -19,21 +19,17 @@ export class IftOAuth2Server {
       getAccessToken: (accessToken: string): any => {
         console.info('In getAccessToken OAuth method');
 
-        const model = Api.inst.sequelize.models.accessToken as
-          Model<Sequelize.Instance<DbAccessToken>, DbAccessToken>;
-
-        const resp = model.findOne({
-          include: [Api.inst.sequelize.models.client, Api.inst.sequelize.models.user],
+        const resp = DbAccessToken.findOne({
+          include: [DbClient, DbUser],
           where: {
             TokenValue: accessToken,
           },
-        }).then((inst: Sequelize.Instance<DbAccessToken> | null) => {
-          let token: DbAccessToken;
-
-// tslint:disable-next-line: no-conditional-assignment
-          if (!inst || !(token = inst.get())) {
+        }).then((inst: DbAccessToken|null) => {
+          if (!inst) {
             throw new Error('user not found 1');
           }
+          let token: DbAccessToken = inst;
+
 
           const obj = {
             accessToken: token.TokenValue,
@@ -52,27 +48,22 @@ export class IftOAuth2Server {
       getClient: (clientId: string, clientSecret: string): Promise<Client | Falsey> | any => {
         console.info('In getClient OAuth method');
 
-        const model = Api.inst.sequelize.models.client as
-          Model<Sequelize.Instance<DbClient>, DbClient>;
-
-        const resp = model.findOne({
+        const resp = DbClient.findOne({
           where: {
             ClientId: clientId,
             // For mobile and native apps only, not used yet
             // ClientSecret: clientSecret
           },
-        }).then((inst: Sequelize.Instance<DbClient> | null) => {
-          let client: DbClient;
-
-          // tslint:disable-next-line: no-conditional-assignment
-          if (!inst || !(client = inst.get())) {
+        }).then((inst: DbClient|null) => {
+          if (!inst) {
             throw new Error('client not found');
           }
+          let client: DbClient = inst;
 
           const obj = {
             // client_id: client.ClientId,
             client_name: client.Name,
-            grants: DbClient.getGrants(client),
+            grants: client.Grants,
             id: client.ClientId,
             redirectUris: client.RedirectUris,
             // accessTokenLifetime: 3600,
@@ -95,48 +86,37 @@ export class IftOAuth2Server {
       },
       saveToken: (token: Token, client: Client, user: User): any => {
         console.info('In saveToken OAuth method');
-        const model = Api.inst.sequelize.models.accessToken as
-          Model<Sequelize.Instance<DbAccessToken>, DbAccessToken>;
-        const resp = model.findOne({
-          include: [
-            { model: Api.inst.sequelize.models.client, as: 'client' },
-            { model: Api.inst.sequelize.models.user, as: 'user' },
-          ],
+        const resp = DbAccessToken.findOne({
+          include: [DbClient, DbUser],
           where: {
             TokenValue: token.accessToken,
           },
-        }).then(async (inst: Sequelize.Instance<DbAccessToken> | null) => {
+        }).then(async (inst: DbAccessToken|null) => {
           let t: DbAccessToken;
-
-          // tslint:disable-next-line: no-conditional-assignment
-          if (!inst || !(t = inst.get())) {
-            const clientModel = Api.inst.sequelize.models.client as
-              Model<Sequelize.Instance<DbClient>, DbClient>;
-
-            const dbClientInst = await clientModel.findOne({
+          if (!inst) {
+            const dbClientInst = await DbClient.findOne({
               where: { ClientId: client.id },
             });
-            let dbClient: DbClient;
-            // tslint:disable-next-line: no-conditional-assignment
-            if (!dbClientInst || !(dbClient = dbClientInst.get()) || dbClient.Id === undefined) {
+            if (!dbClientInst) {
               throw new Error(`client '${client.id}' not found`);
             }
+            let dbClient: DbClient = dbClientInst;
+            if (!dbClient.Id) { throw new Error('Missing Id'); }
 
             // Clean expired tokens for the user
-            await model.destroy({
-              where: { IdClient: dbClient.Id, IdUser: user.id, ExpiresAt: { [Sequelize.Op.lt]: new Date() } },
+            await DbAccessToken.destroy({
+              where: { IdClient: dbClient.Id, IdUser: user.id, ExpiresAt: { [Op.lt]: new Date() } },
             });
 
             // token not found -> create
-            inst = await model.create({
+            t = await DbAccessToken.create({
               ExpiresAt: token.accessTokenExpiresAt === undefined ? new Date() : token.accessTokenExpiresAt,
               IdClient: dbClient.Id,
               IdUser: user.id,
               Scopes: token.scope === undefined ? '' : Array.isArray(token.scope) ? token.scope.join('|') : token.scope,
               TokenValue: token.accessToken,
             } as DbAccessToken);
-            t = inst.get();
-          }
+          } else { t = inst; }
 
           const obj = {
             accessToken: t.TokenValue,
@@ -149,11 +129,11 @@ export class IftOAuth2Server {
             User: user,
             id_token: undefined,
           };
-          if (Api.req === undefined || Api.req.body.nonce === undefined) {
+          if (IdentityApi.req === undefined || IdentityApi.req.body.nonce === undefined) {
             throw new Error('request or nonce value is not defined');
           }
 
-          obj.id_token = await IftOAuth2Server.getIdToken(obj, Api.req.body.nonce);
+          obj.id_token = await IftOAuth2Server.getIdToken(obj, IdentityApi.req.body.nonce);
 
           return obj;
         }); // .catch(() => {console.info('error (harps)')});
@@ -238,9 +218,7 @@ export class IftOAuth2Server {
       getUser: (username: string, password: string) => {
         console.info('In getUser OAuth method');
 
-        const model = UsersController.getModel();
-
-        const resp = model.findOne({
+        const resp = DbUser.findOne({
           where: {
             Email: username,
           },
@@ -275,7 +253,7 @@ export class IftOAuth2Server {
     try {
 
       const userscope: string = await this.getUserScope(token.user.username);
-      const host = Api.req.headers.host;
+      const host = IdentityApi.req.headers.host;
       const protocol = !host || host.startsWith('localhost') ? 'http' : 'https';
       const clientUrl = `${protocol}://${host}`;
 
@@ -330,7 +308,8 @@ export class IftOAuth2Server {
     return new Promise((resolve, reject) => {
       console.log('/n/n/n mail:' + mail + '/n/n/n');
       const xhr = new XMLHttpRequest();
-      xhr.open('get', `${Api.accessMsRootUrl}/api/users/${mail}/permissions`, true);
+      // xhr.open('get', `${IdentityApi.accessMsRootUrl}/api/users/${mail}/permissions`, true);
+      xhr.open('get', `/api/users/${mail}/permissions`, true);
       xhr.onload = () => {
         if (xhr.status !== 200) {
           reject(xhr.statusText);

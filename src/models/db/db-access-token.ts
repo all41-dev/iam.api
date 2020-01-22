@@ -33,8 +33,8 @@ export class DbAccessToken extends Model<DbAccessToken> {
     ExpiresAt!: Date;
 
     @BelongsTo((): typeof Model => DbClient)
-    public Client?: DbClient;
+    public client?: DbClient;
 
     @BelongsTo((): typeof Model => DbUser)
-    public User?: DbUser;
+    public user?: DbUser;
 }

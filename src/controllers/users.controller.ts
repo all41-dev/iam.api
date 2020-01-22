@@ -1,19 +1,18 @@
 import { ControllerBase } from '@harps/server';
 import * as Bcrypt from 'bcrypt';
 import { NextFunction, Request, Response, Router } from 'express';
-import { FindOptions, Instance, Model } from 'sequelize';
-import { Api } from '../api';
+import { FindOptions, Model } from 'sequelize';
+import { IdentityApi } from '../api';
 import { EntitySetPasswordToken } from '../models/business/entity-set-password-token';
 import { EntityUser } from '../models/business/entity-user';
-import { DbSetPasswordToken, IDbSetPasswordTokenInstance } from '../models/db/db-set-password-token';
-import { DbUser, IDbUserInstance } from '../models/db/db-user';
+import { DbSetPasswordToken } from '../models/db/db-set-password-token';
+import { DbUser } from '../models/db/db-user';
 import { IftOAuth2Server } from '../models/ift-oauth2-server';
 
 // tslint:disable-next-line: no-var-requires
 const XMLHttpRequest = require('xmlhttprequest').XMLHttpRequest;
 
 export class UsersController extends ControllerBase {
-
   public static create() {
     const router = Router();
 
@@ -35,31 +34,29 @@ export class UsersController extends ControllerBase {
   // noinspection JSUnusedLocalSymbols
   public static getAll(req: Request, res: Response, next: NextFunction) {
     // Since here, the user is considered as authorized
-    const options: FindOptions<DbUser> = {};
     const entity = new EntityUser();
 
-    entity.setPagination(req, options);
-    entity.setFilter(req, options);
+    entity.setFilter(req.query.filter);
+    entity.setIncludes(req.query.include);
 
-    entity.doGet(UsersController.getModel(), options, res);
+    entity.get().then((data): void => {
+      res.json(data);
+    }, (reason): void => {
+      res.status(500);
+      res.json(reason);
+    });
   }
 
   // noinspection JSUnusedLocalSymbols
   public static getById(req: Request, res: Response, next: NextFunction) {
-    const options: FindOptions<DbUser> = {};
     const entity = new EntityUser();
-
-    entity.setPagination(req, options);
-
-    const userId = Number(req.params.id);
-    if (isNaN(userId)) {
-      throw new Error(`User id must be a number, received value is: ${req.params.id}`);
-    }
-    options.where = {
-      Id: userId,
-    };
-
-    entity.doGet(UsersController.getModel(), options, res);
+    entity.setIncludes(req.query.include);
+    entity.getByPk(req.params.id).then((data): void => {
+      res.json(data);
+    }, (reason): void => {
+      res.status(500);
+      res.json(reason);
+    });
   }
 
   // noinspection JSUnusedLocalSymbols
@@ -71,21 +68,18 @@ export class UsersController extends ControllerBase {
       throw new Error('Token is not set');
     }
 
-    const options: FindOptions<DbSetPasswordToken> = {
+    const options: FindOptions = {
       where: {
         TokenHash: token,
       },
     };
 
-    const setPasswordTokenModel = Api.inst.sequelize.models.setPasswordToken as
-      Model<Instance<DbSetPasswordToken>, DbSetPasswordToken>;
-
-    entity.doGetFromToken(setPasswordTokenModel, options, res);
+    entity.doGetFromToken(options, res);
   }
 
   public static authenticate(req: Request, res: Response, next: NextFunction) {
-    Api.req = req;
-    Api.res = res;
+    IdentityApi.req = req;
+    IdentityApi.res = res;
 
     const oauthSrv = IftOAuth2Server.getInstance({
       allowExtendedTokenAttributes: true,
@@ -96,75 +90,64 @@ export class UsersController extends ControllerBase {
   }
 
   public static changePassword(req: Request, res: Response, next: NextFunction) {
-    const tokenModel = Api.inst.sequelize.models.setPasswordToken as
-      Model<Instance<DbSetPasswordToken>, DbSetPasswordToken>;
-    const userModel = Api.inst.sequelize.models.user as
-      Model<Instance<DbUser>, DbUser>;
-
     const token = req.params.token;
-    tokenModel.sync().then(async () => {
-      const options: FindOptions<DbSetPasswordToken> = {
-        where: {
-          TokenHash: token,
-        },
-      };
-      tokenModel.find(options).then(async (spt: Instance<DbSetPasswordToken> | null) => {
-        const inst = spt as IDbSetPasswordTokenInstance;
-        return inst.getUser().then(async (user: IDbUserInstance | null) => {
-          if (user === null) {
-            throw new Error('user id null');
-          }
+    const options: FindOptions = {
+      where: {
+        TokenHash: token,
+      },
+    };
+    DbSetPasswordToken.findOne(options).then(async (spt: DbSetPasswordToken | null) => {
+      const inst = spt as DbSetPasswordToken;
+      const user = inst.User;
+      if (!user) {
+        throw new Error('user id null');
+      }
 
-          const salt = Bcrypt.genSaltSync(10);
-          const hash = Bcrypt.hashSync(req.body.password, salt);
-          user.update({
-            Hash: hash,
-            Salt: salt,
-          }).then((updatedUser) => {
-            if (spt === null) {
-              throw new Error('setPasswordToken is null');
-            }
-            spt.destroy().then(() => {
-              const eu = new EntityUser();
-              res.json(eu.dbToClient(user));
-            });
-          });
+      const salt = Bcrypt.genSaltSync(10);
+      const hash = Bcrypt.hashSync(req.body.password, salt);
+      user.update({
+        Hash: hash,
+        Salt: salt,
+      }).then(() => {
+        if (spt === null) {
+          throw new Error('setPasswordToken is null');
+        }
+        spt.destroy().then(() => {
+          const eu = new EntityUser();
+          res.json(eu.dbToClient(user));
         });
       });
     });
   }
 
   public static post(req: Request, res: Response, next: NextFunction) {
-    Api.req = req;
-    Api.res = res;
     const entity = new EntityUser();
 
-    try {
-      entity.create(req, UsersController.getModel(), res);
-    } catch (e) {
-      res.statusCode = 400;
-      res.send({ message: e.message });
-    }
+    entity.post(req.body).then((data): void => {
+      res.json(data);
+    }, (reason): void => {
+      res.status(500);
+      res.json(reason);
+    });
   }
 
   public static update(req: Request, res: Response, next: NextFunction) {
     const entity = new EntityUser();
-    const options: FindOptions<DbUser> = { where: { Id: req.params.id } };
+    if (!req.params.id || !parseInt(req.params.id)) { throw new Error('number id parameter must be provided when updating an exchange'); }
 
-    try {
-      entity.update(req, options, UsersController.getModel(), res);
-    } catch (e) {
-      res.statusCode = 400;
-      res.send({ message: e.message });
-    }
+    entity.put(req.body).then((data): void => {
+      res.json(data);
+    }, (reason): void => {
+      res.status(500);
+      res.json(reason);
+    });
   }
 
   public static remove(req: Request, res: Response, next: NextFunction) {
     const entity = new EntityUser();
-    const options: FindOptions<DbUser> = { where: { Id: req.params.id } };
 
     try {
-      entity.delete(req, options, UsersController.getModel(), res);
+      entity.del(req.params.id, 'Id');
     } catch (e) {
       res.statusCode = 400;
       res.send({ message: e.message });
@@ -185,25 +168,17 @@ export class UsersController extends ControllerBase {
       return;
     }
 
-    Api.inst.sequelize.models.user.find({
+    DbUser.findOne({
       where: {
         email,
       },
-    }).then((user: DbUser[]) => {
-      if (user.length === 0 || user[0].Id === undefined) {
+    }).then((user: DbUser|null) => {
+      if (!user || user.Id === undefined) {
         throw new Error('user not found');
       }
       const eu = new EntitySetPasswordToken();
       // tslint:disable-next-line: max-line-length
-      eu.createSetPasswordToken(user[0].Id, 'You have requested to reset you password for Informaticon Devops, please click the link below to proceed. If you didn\'t request this, you can ignore this e-mail.');
+      eu.createSetPasswordToken(user.Id, 'You have requested to reset you password for Informaticon Devops, please click the link below to proceed. If you didn\'t request this, you can ignore this e-mail.');
     });
-  }
-
-  public static getModel(): Model<Instance<DbUser>, DbUser> {
-    return Api.inst.sequelize.models.user as Model<Instance<DbUser>, DbUser>;
-  }
-
-  constructor() {
-    super();
   }
 }

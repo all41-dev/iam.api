@@ -1,6 +1,6 @@
 {
   "name": "@harps/iam.identity-api",
-  "version": "1.2.12",
+  "version": "1.0.0",
   "description": "Api serving user management operations and OAuth service",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -12,7 +12,9 @@
     "lint": "tslint --project tslint.json",
     "build": "tsc",
     "preversion": "run-p test lint build",
-    "postversion": "git push && git push --tags"
+    "postversion": "git push && git push --tags",
+    "ncu:view": "ncu -x typescript,sequelize",
+    "ncu:upd": "ncu -x typescript,sequelize -u"
   },
   "repository": {
     "type": "git",
@@ -24,31 +26,31 @@
   "homepage": "https://github.com/informaticon/devops.identity-api",
   "dependencies": {
     "bcrypt": "^3.0.7",
-    "bluebird": "^3.7.1",
     "express-oauth-server": "^2.0.0",
-    "nodemailer": "^5.1.1",
+    "nodemailer": "^6.4.2",
     "oauth2-server": "^3.0.1",
     "xmlhttprequest": "^1.8.0"
   },
   "devDependencies": {
     "@harps/iam.identity-model": "^1.0.3",
-    "@harps/server": "^4.7.3",
+    "@harps/server": "^4.7.24",
     "@types/bcrypt": "^3.0.0",
     "@types/bluebird": "^3.5.29",
     "@types/express": "^4.17.2",
     "@types/express-oauth-server": "^2.0.2",
-    "@types/jsonwebtoken": "^8.3.5",
-    "@types/node": "^11.15.2",
+    "@types/jsonwebtoken": "^8.3.6",
+    "@types/node": "^13.1.8",
     "@types/node-rsa": "^1.0.0",
-    "@types/nodemailer": "^4.6.8",
+    "@types/nodemailer": "^6.4.0",
     "@types/oauth2-server": "^3.0.12",
-    "@types/validator": "10.11.1",
-    "cz-conventional-changelog": "^2.1.0",
+    "@types/validator": "12.0.1",
+    "@typescript-eslint/eslint-plugin": "^2.17.0",
+    "@typescript-eslint/parser": "^2.17.0",
+    "cz-conventional-changelog": "^3.0.2",
     "express": "^4.17.1",
     "jsonwebtoken": "^8.5.1",
-    "sequelize": "5.21.1",
-    "tslint": "^5.20.1",
-    "typescript": "^3.7.2"
+    "sequelize": "5.21.0",
+    "typescript": "~3.5.3"
   },
   "config": {
     "commitizen": {
