@@ -7,7 +7,7 @@ import { EntitySetPasswordToken } from '../models/business/entity-set-password-t
 import { EntityUser } from '../models/business/entity-user';
 import { DbSetPasswordToken } from '../models/db/db-set-password-token';
 import { DbRessource } from '../models/db/db-ressource';
-import { IftOAuth2Server } from '../models/ift-oauth2-server';
+import { HarpsOAuth2Server } from '../models/ift-oauth2-server';
 
 // tslint:disable-next-line: no-var-requires
 const XMLHttpRequest = require('xmlhttprequest').XMLHttpRequest;
@@ -81,7 +81,7 @@ export class UsersController extends ControllerBase {
     IdentityApi.req = req;
     IdentityApi.res = res;
 
-    const oauthSrv = IftOAuth2Server.getInstance({
+    const oauthSrv = HarpsOAuth2Server.getInstance({
       allowExtendedTokenAttributes: true,
       requireClientAuthentication: { password: false },
     });

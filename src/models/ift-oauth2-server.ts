@@ -12,7 +12,7 @@ import { DbScope } from './db/db-scope';
 // tslint:disable-next-line: no-var-requires
 const XMLHttpRequest = require('xmlhttprequest').XMLHttpRequest;
 
-export class IftOAuth2Server {
+export class HarpsOAuth2Server {
   public static getInstance(options: any): ExpressOAuthServer {
     const opt = options === undefined ? {} : options;
     opt.model = {
@@ -139,7 +139,7 @@ export class IftOAuth2Server {
           }
 
           // eslint-disable-next-line @typescript-eslint/camelcase
-          obj.id_token = await IftOAuth2Server.getIdToken(obj, IdentityApi.req.body.nonce);
+          obj.id_token = await HarpsOAuth2Server.getIdToken(obj, IdentityApi.req.body.nonce);
 
           return obj;
         }); // .catch(() => {console.info('error (harps)')});
@@ -216,13 +216,13 @@ export class IftOAuth2Server {
       //         return Promise.resolve('');
       //     });
       // },
-      getUserFromClient: (client: Client) => {
+      getUserFromClient: (client: Client): Promise<User|Falsey> => {
         // console.info('In getUserFromClient OAuth method');
         return new Promise<User | Falsey>(() => {
           return Promise.resolve('');
         });
       },
-      getUser: (username: string, password: string) => {
+      getUser: (username: string, password: string): Promise<User> => {
         // console.info('In getUser OAuth method');
 
         const resp = DbRessource.findOne({
@@ -260,7 +260,7 @@ export class IftOAuth2Server {
   public static async getIdToken(token: Token, nonce: string): Promise<any> {
     try {
 
-      const userscope: string = await this.getUserScope(token.user.username);
+      const userscope: string = await HarpsOAuth2Server.getUserScopes(token.user.username);
       const host = IdentityApi.req.headers.host;
       const protocol = !host || host.startsWith('localhost') ? 'http' : 'https';
       const clientUrl = `${protocol}://${host}`;
@@ -313,23 +313,31 @@ export class IftOAuth2Server {
     }
   }
 
-  public static getUserScope(mail: string): Promise<string> {
-    return new Promise((resolve, reject) => {
-      // console.log('/n/n/n mail:' + mail + '/n/n/n');
-      const xhr = new XMLHttpRequest();
-      // xhr.open('get', `${IdentityApi.accessMsRootUrl}/api/users/${mail}/permissions`, true);
-      xhr.open('get', `/api/users/${mail}/permissions`, true);
-      xhr.onload = () => {
-        if (xhr.status !== 200) {
-          reject(xhr.statusText);
-        } else {
-          resolve(xhr.responseText);
-        }
+  public static async getUserScopes(username: string, requiredScopes?: string): Promise<string> {
+    return DbRessource.findOne({where: {email: username}}).then((user: DbRessource|null) => {
+      if (!user) { throw new Error('User not found'); }
 
-      };
-      xhr.onerror = () => reject(xhr.statusText);
-      xhr.ontimeout = () => reject(xhr.statusText);
-      xhr.send();
-    });
+      const scopeUuids = user.scopeUuids ? user.scopeUuids.split(' ') : [];
+      return DbScope.findAll({where: { uuid: {[Op.in]: scopeUuids}}}).then((scopes: DbScope[]) => scopes.map((scope) => scope.ressourcePaths).join(';'));
+    })
   }
+  // public static getUserScope(mail: string): Promise<string> {
+  //   return new Promise((resolve, reject) => {
+  //     // console.log('/n/n/n mail:' + mail + '/n/n/n');
+  //     const xhr = new XMLHttpRequest();
+  //     // xhr.open('get', `${IdentityApi.accessMsRootUrl}/api/users/${mail}/permissions`, true);
+  //     xhr.open('get', `/api/users/${mail}/permissions`, true);
+  //     xhr.onload = () => {
+  //       if (xhr.status !== 200) {
+  //         reject(xhr.statusText);
+  //       } else {
+  //         resolve(xhr.responseText);
+  //       }
+
+  //     };
+  //     xhr.onerror = () => reject(xhr.statusText);
+  //     xhr.ontimeout = () => reject(xhr.statusText);
+  //     xhr.send();
+  //   });
+  // }
 }
