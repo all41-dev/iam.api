@@ -263,7 +263,7 @@ export class HarpsOAuth2Server {
       const userscope: string = await HarpsOAuth2Server.getUserScopes(token.user.username);
       const host = IdentityApi.req.headers.host;
       const protocol = !host || host.startsWith('localhost') ? 'http' : 'https';
-      const clientUrl = `${protocol}://${host}`;
+      const clientUrl = `${protocol}://${host}/iam`;
 
       return Jwt.sign({
         iss: clientUrl, // 'http://localhost:3000', // issuer -> OAuth server (this)

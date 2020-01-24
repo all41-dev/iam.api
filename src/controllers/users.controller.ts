@@ -13,26 +13,26 @@ import { HarpsOAuth2Server } from '../models/ift-oauth2-server';
 const XMLHttpRequest = require('xmlhttprequest').XMLHttpRequest;
 
 export class UsersController extends ControllerBase {
-  public static create() {
+  public static create(): Router {
     const router = Router();
 
-    router.get('/', UsersController.checkAccess(['Access/Read', 'Microservices/Identity-Service/Users']), UsersController.getAll);
-    router.get('/:id', UsersController.checkAccess(['Access/Read', 'Microservices/Identity-Service/Users']), UsersController.getById);
+    router.get('/', UsersController.checkAccess(['/root']), UsersController.getAll);
+    router.get('/:id', UsersController.checkAccess(['/root']), UsersController.getById);
     // tslint:disable-next-line: max-line-length
     router.get('/from-token/:token', UsersController.getFromToken);
     router.post('/authenticate', UsersController.authenticate);
     // tslint:disable-next-line: max-line-length
     router.patch('/change-password/:token', UsersController.changePassword);
-    router.post('/', UsersController.checkAccess(['Access/Create', 'Microservices/Identity-Service/Users']), UsersController.post);
-    router.patch('/:id', UsersController.checkAccess(['Access/Update', 'Microservices/Identity-Service/Users']), UsersController.update);
-    router.delete('/:id', UsersController.checkAccess(['Access/Delete', 'Microservices/Identity-Service/Users']), UsersController.remove);
+    router.post('/', UsersController.checkAccess(['/root']), UsersController.post);
+    router.patch('/:id', UsersController.checkAccess(['/root']), UsersController.update);
+    router.delete('/:id', UsersController.checkAccess(['/root']), UsersController.remove);
     router.post('/lost-password/:email', UsersController.lostPassword);
 
     return router;
   }
 
   // noinspection JSUnusedLocalSymbols
-  public static getAll(req: Request, res: Response, next: NextFunction) {
+  public static getAll(req: Request, res: Response, next: NextFunction): void {
     // Since here, the user is considered as authorized
     const entity = new EntityUser();
 
