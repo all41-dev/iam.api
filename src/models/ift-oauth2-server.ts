@@ -314,11 +314,12 @@ export class HarpsOAuth2Server {
   }
 
   public static async getUserScopes(username: string, requiredScopes?: string): Promise<string> {
-    return DbRessource.findOne({where: {email: username}}).then((user: DbRessource|null) => {
+    return DbRessource.findOne({where: {email: username}}).then(async (user: DbRessource|null) => {
       if (!user) { throw new Error('User not found'); }
 
       const scopeUuids = user.scopeUuids ? user.scopeUuids.split(' ') : [];
-      return DbScope.findAll({where: { uuid: {[Op.in]: scopeUuids}}}).then((scopes: DbScope[]) => scopes.map((scope) => scope.ressourcePaths).join(';'));
+      const res = await DbScope.findAll({where: { uuid: {[Op.in]: scopeUuids}}}).then((scopes: DbScope[]) => scopes.map((scope) => scope.ressourcePaths).join(';'));
+      return res;
     })
   }
   // public static getUserScope(mail: string): Promise<string> {
