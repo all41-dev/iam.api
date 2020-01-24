@@ -31,9 +31,9 @@ export class DbAccessToken extends Model<DbAccessToken> {
   @Column(DataType.DATE)
   ExpiresAt!: Date;
 
-  @BelongsTo((): typeof Model => DbRessource)
+  @BelongsTo((): typeof Model => DbRessource, 'IdClient')
   public client?: DbRessource;
 
-  @BelongsTo((): typeof Model => DbRessource)
+  @BelongsTo((): typeof Model => DbRessource, 'IdUser')
   public user?: DbRessource;
 }

@@ -64,7 +64,7 @@ export class IftOAuth2Server {
             // client_id: client.ClientId,
             // eslint-disable-next-line @typescript-eslint/camelcase
             client_name: client.name,
-            grants: 'password',
+            grants: ['password'],
             id: client.uuid,
             redirectUris: client.redirectUris,
             // accessTokenLifetime: 3600,
@@ -225,22 +225,23 @@ export class IftOAuth2Server {
           where: {
             email: username,
           },
-        }).then((inst) => {
-          let user: User;
+        }).then((user) => {
 
-          // tslint:disable-next-line: no-conditional-assignment
-          if (!inst || !(user = inst.get())) {
+          if (!user) {
             throw new Error('user not found');
           }
+          if (!user.salt) {
+            throw new Error('salt missing');
+          }
 
-          const hash = Bcrypt.hashSync(password, user.Salt);
-          if (hash !== user.Hash) {
+          const hash = Bcrypt.hashSync(password, user.salt);
+          if (hash !== user.hash) {
             throw new Error('bad password');
           }
 
           const obj: User = {
-            id: user.Id,
-            username: user.Email,
+            id: user.uuid,
+            username: user.email,
           };
 
           return obj;
