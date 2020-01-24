@@ -62,6 +62,6 @@ export class DbRessource extends Model<DbRessource> {
   @HasMany((): typeof Model => DbSetPasswordToken)
   public setPasswordTokens?: DbSetPasswordToken[];
 
-  @HasMany((): typeof Model => DbAccessToken)
+  @HasMany((): typeof Model => DbAccessToken, 'IdUser')
   public accessTokens?: DbAccessToken[];
 }
