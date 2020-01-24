@@ -88,7 +88,10 @@ export class IftOAuth2Server {
       saveToken: (token: Token, client: Client, user: User): any => {
         // console.info('In saveToken OAuth method');
         const resp = DbAccessToken.findOne({
-          include: [DbRessource],
+          include: [
+            { model: DbRessource, foreignKey: 'IdClient'},
+            { model: DbRessource, foreignKey: 'IdUser'},
+          ],
           where: {
             TokenValue: token.accessToken,
           },
