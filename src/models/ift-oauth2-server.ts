@@ -13,7 +13,7 @@ import { DbScope } from './db/db-scope';
 const XMLHttpRequest = require('xmlhttprequest').XMLHttpRequest;
 
 export class IftOAuth2Server {
-  public static getInstance(options: any) {
+  public static getInstance(options: any): ExpressOAuthServer {
     const opt = options === undefined ? {} : options;
     opt.model = {
       getAccessToken: (accessToken: string): any => {
@@ -32,10 +32,10 @@ export class IftOAuth2Server {
 
 
           const obj = {
-            accessToken: token.TokenValue,
-            accessTokenExpiresAt: token.ExpiresAt,
+            accessToken: token.tokenValue,
+            accessTokenExpiresAt: token.expiresAt,
             client: token.client,
-            scope: token.Scopes,
+            scope: token.scopes,
             user: token.user,
           };
 
@@ -88,10 +88,10 @@ export class IftOAuth2Server {
       saveToken: (token: Token, client: Client, user: User): any => {
         // console.info('In saveToken OAuth method');
         const resp = DbAccessToken.findOne({
-          include: [
-            { model: DbRessource, foreignKey: 'IdClient'},
-            { model: DbRessource, foreignKey: 'IdUser'},
-          ],
+          // include: [
+          //   { model: DbRessource, foreignKey: 'IdClient', through},
+          //   { model: DbRessource, foreignKey: 'IdUser'},
+          // ],
           where: {
             TokenValue: token.accessToken,
           },
@@ -114,18 +114,18 @@ export class IftOAuth2Server {
 
             // token not found -> create
             t = await DbAccessToken.create({
-              ExpiresAt: token.accessTokenExpiresAt === undefined ? new Date() : token.accessTokenExpiresAt,
-              IdClient: dbClient.uuid,
-              IdUser: user.id,
-              Scopes: token.scope === undefined ? '' : Array.isArray(token.scope) ? token.scope.join('|') : token.scope,
-              TokenValue: token.accessToken,
+              expiresAt: token.accessTokenExpiresAt === undefined ? new Date() : token.accessTokenExpiresAt,
+              idClient: dbClient.uuid,
+              idUser: user.id,
+              scopes: token.scope === undefined ? '' : Array.isArray(token.scope) ? token.scope.join('|') : token.scope,
+              tokenValue: token.accessToken,
             } as DbAccessToken);
           } else { t = inst; }
 
           const obj = {
-            accessToken: t.TokenValue,
-            accessTokenExpiresAt: t.ExpiresAt,
-            scope: t.Scopes,
+            accessToken: t.tokenValue,
+            accessTokenExpiresAt: t.expiresAt,
+            scope: t.scopes,
             // tslint:disable-next-line: object-literal-sort-keys
             client,
             user,

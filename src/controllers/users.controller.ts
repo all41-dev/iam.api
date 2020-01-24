@@ -77,7 +77,7 @@ export class UsersController extends ControllerBase {
     entity.doGetFromToken(options, res);
   }
 
-  public static authenticate(req: Request, res: Response, next: NextFunction) {
+  public static authenticate(req: Request, res: Response, next: NextFunction): void {
     IdentityApi.req = req;
     IdentityApi.res = res;
 
@@ -85,7 +85,6 @@ export class UsersController extends ControllerBase {
       allowExtendedTokenAttributes: true,
       requireClientAuthentication: { password: false },
     });
-
     oauthSrv.token()(req, res, next);
   }
 
