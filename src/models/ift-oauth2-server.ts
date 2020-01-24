@@ -99,7 +99,7 @@ export class IftOAuth2Server {
           let t: DbAccessToken;
           if (!inst) {
             const dbClientInst = await DbRessource.findOne({
-              where: { ClientId: client.id },
+              where: { uuid: client.id },
             });
             if (!dbClientInst) {
               throw new Error(`client '${client.id}' not found`);
@@ -109,7 +109,7 @@ export class IftOAuth2Server {
 
             // Clean expired tokens for the user
             await DbAccessToken.destroy({
-              where: { IdClient: dbClient.uuid, IdUser: user.id, ExpiresAt: { [Op.lt]: new Date() } },
+              where: { idClient: dbClient.uuid, idUser: user.id, expiresAt: { [Op.lt]: new Date() } },
             });
 
             // token not found -> create
@@ -146,7 +146,8 @@ export class IftOAuth2Server {
 
         return resp;
       },
-      verifyScope: (token: Token, scope: string | string[]) => {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      verifyScope: (_token: Token, _scope: string | string[]): Promise<boolean> => {
         // console.info('In verifyScope OAuth method');
         // todo: next
         return new Promise<boolean>(() => {
