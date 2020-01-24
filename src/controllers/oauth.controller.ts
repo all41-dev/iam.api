@@ -27,7 +27,8 @@ export class OAuthController extends ControllerBase {
   public static getConfig(req: Request, res: Response, next: NextFunction) {
     const host = req.get('host');
     const protocol = !host || host.startsWith('localhost') ? 'http' : 'https';
-    const apiHost = protocol + '://' + host; // + req.originalUrl;
+    const url = (req.originalUrl as string);
+    const apiHost = protocol + '://' + host + (req.originalUrl as string).substr(0, url.indexOf('/.well-known/openid-configuration'));
 
     res.json({
       issuer: apiHost, // "http://localhost:1212",

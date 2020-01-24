@@ -8,6 +8,6 @@ export class ManagerDb extends Db {
   public async init(): Promise<void> {
     await this._init();
     ManagerDb.inst = this;
-    this.sequelize.addModels([DbAccessToken, DbRessource, DbSetPasswordToken, DbScope]);
+    this.sequelize.addModels([DbRessource, DbAccessToken, DbSetPasswordToken, DbScope]);
   }
 }
