@@ -15,5 +15,5 @@ export class DbScope extends Model<DbScope> {
 
   @AllowNull
   @Column(DataType.STRING(200))
-  description?: string;
+  name?: string;
 }
