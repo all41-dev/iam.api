@@ -1,6 +1,6 @@
 {
   "name": "@harps/iam.identity-api",
-  "version": "1.0.8",
+  "version": "1.0.9",
   "description": "Api serving user management operations and OAuth service",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
