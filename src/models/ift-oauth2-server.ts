@@ -17,7 +17,7 @@ export class IftOAuth2Server {
     const opt = options === undefined ? {} : options;
     opt.model = {
       getAccessToken: (accessToken: string): any => {
-        console.info('In getAccessToken OAuth method');
+        // console.info('In getAccessToken OAuth method');
 
         const resp = DbAccessToken.findOne({
           include: [DbRessource],
@@ -28,7 +28,7 @@ export class IftOAuth2Server {
           if (!inst) {
             throw new Error('user not found 1');
           }
-          let token: DbAccessToken = inst;
+          const token: DbAccessToken = inst;
 
 
           const obj = {
@@ -42,11 +42,11 @@ export class IftOAuth2Server {
           return obj;
         }); // .catch(() => {console.info('error (harps)')});
 
-        console.info('ready to return promise');
+        // console.info('ready to return promise');
         return resp;
       },
       getClient: (clientId: string, clientSecret: string): Promise<Client | Falsey> | any => {
-        console.info('In getClient OAuth method');
+        // console.info('In getClient OAuth method');
 
         const resp = DbRessource.findOne({
           where: {
@@ -58,10 +58,11 @@ export class IftOAuth2Server {
           if (!inst) {
             throw new Error('client not found');
           }
-          let client: DbRessource = inst;
+          const client: DbRessource = inst;
 
           const obj = {
             // client_id: client.ClientId,
+            // eslint-disable-next-line @typescript-eslint/camelcase
             client_name: client.name,
             grants: 'password',
             id: client.uuid,
@@ -81,11 +82,11 @@ export class IftOAuth2Server {
           return obj;
         }); // .catch(() => {console.info('error (harps)')});
 
-        console.info('ready to return promise');
+        // console.info('ready to return promise');
         return resp;
       },
       saveToken: (token: Token, client: Client, user: User): any => {
-        console.info('In saveToken OAuth method');
+        // console.info('In saveToken OAuth method');
         const resp = DbAccessToken.findOne({
           include: [DbRessource],
           where: {
@@ -100,7 +101,7 @@ export class IftOAuth2Server {
             if (!dbClientInst) {
               throw new Error(`client '${client.id}' not found`);
             }
-            let dbClient: DbRessource = dbClientInst;
+            const dbClient: DbRessource = dbClientInst;
             if (!dbClient.uuid) { throw new Error('Missing Id'); }
 
             // Clean expired tokens for the user
@@ -127,12 +128,14 @@ export class IftOAuth2Server {
             user,
             Client: client,
             User: user,
+            // eslint-disable-next-line @typescript-eslint/camelcase
             id_token: undefined,
           };
           if (IdentityApi.req === undefined || IdentityApi.req.body.nonce === undefined) {
             throw new Error('request or nonce value is not defined');
           }
 
+          // eslint-disable-next-line @typescript-eslint/camelcase
           obj.id_token = await IftOAuth2Server.getIdToken(obj, IdentityApi.req.body.nonce);
 
           return obj;
@@ -141,7 +144,7 @@ export class IftOAuth2Server {
         return resp;
       },
       verifyScope: (token: Token, scope: string | string[]) => {
-        console.info('In verifyScope OAuth method');
+        // console.info('In verifyScope OAuth method');
         // todo: next
         return new Promise<boolean>(() => {
           return Promise.resolve(false);
@@ -179,25 +182,25 @@ export class IftOAuth2Server {
       // },
       // tslint:disable-next-line: object-literal-sort-keys
       generateAuthorizationCode: (client: Client, user: User, scope: string | string[]) => {
-        console.info('In generateAuthorizationCode OAuth method');
+        // console.info('In generateAuthorizationCode OAuth method');
         return new Promise<string>(() => {
           return Promise.resolve('');
         });
       },
       getAuthorizationCode: (authorizationCode: string) => {
-        console.info('In getAuthorizationCode OAuth method');
+        // console.info('In getAuthorizationCode OAuth method');
         return new Promise<AuthorizationCode | Falsey>(() => {
           return Promise.resolve('');
         });
       },
       saveAuthorizationCode: (code: AuthorizationCode, client: Client, user: User) => {
-        console.info('In saveAuthorizationCode OAuth method');
+        // console.info('In saveAuthorizationCode OAuth method');
         return new Promise<AuthorizationCode | Falsey>(() => {
           return Promise.resolve('');
         });
       },
       revokeAuthorizationCode: (code: AuthorizationCode) => {
-        console.info('In revokeAuthorizationCode OAuth method');
+        // console.info('In revokeAuthorizationCode OAuth method');
         return new Promise<boolean>(() => {
           return Promise.resolve(false);
         });
@@ -210,13 +213,13 @@ export class IftOAuth2Server {
       //     });
       // },
       getUserFromClient: (client: Client) => {
-        console.info('In getUserFromClient OAuth method');
+        // console.info('In getUserFromClient OAuth method');
         return new Promise<User | Falsey>(() => {
           return Promise.resolve('');
         });
       },
       getUser: (username: string, password: string) => {
-        console.info('In getUser OAuth method');
+        // console.info('In getUser OAuth method');
 
         const resp = DbRessource.findOne({
           where: {
@@ -264,6 +267,7 @@ export class IftOAuth2Server {
         aud: token.client.id,
         sub: token.user.id,
         username: token.user.username,
+        // eslint-disable-next-line @typescript-eslint/camelcase
         at_hash: token.accessToken,
         // jti: nonce,
         nonce,
@@ -296,17 +300,17 @@ export class IftOAuth2Server {
       'YWz+7C0Jxb7m2c+TWWvsmMDfSXiVammCke2kf6FYp+7ZmGo/eFStaSuZ/VY05uQ1\n' +
       'xunvG66XSKQwIIU61jf35Ltj+RLhsBkOgYxdwa4ADQ6/znXI7JzU\n' +
         '-----END RSA PRIVATE KEY-----', {
-          algorithm: 'RS256',
-          keyid: '4129db2ea1860d2e871ee48506287fb05b04ca3f',
-        });
+        algorithm: 'RS256',
+        keyid: '4129db2ea1860d2e871ee48506287fb05b04ca3f',
+      });
     } catch (ex) {
-      console.error(ex.toString());
+      // console.error(ex.toString());
     }
   }
 
   public static getUserScope(mail: string): Promise<string> {
     return new Promise((resolve, reject) => {
-      console.log('/n/n/n mail:' + mail + '/n/n/n');
+      // console.log('/n/n/n mail:' + mail + '/n/n/n');
       const xhr = new XMLHttpRequest();
       // xhr.open('get', `${IdentityApi.accessMsRootUrl}/api/users/${mail}/permissions`, true);
       xhr.open('get', `/api/users/${mail}/permissions`, true);

@@ -1,7 +1,11 @@
+/* eslint-disable @typescript-eslint/camelcase */
 import { ControllerBase } from '@harps/server';
 import { NextFunction, Request, Response, Router } from 'express';
 
 export class OAuthController extends ControllerBase {
+  constructor() {
+    super();
+  }
 
   public static create() {
     const router = Router();
@@ -95,9 +99,5 @@ export class OAuthController extends ControllerBase {
         },
       ],
     });
-  }
-
-  constructor() {
-    super();
   }
 }

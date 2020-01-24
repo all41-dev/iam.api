@@ -9,10 +9,11 @@ import { DbSetPasswordToken } from '../db/db-set-password-token';
 import { DbRessource } from '../db/db-ressource';
 
 export class EntitySetPasswordToken extends Entity<DbSetPasswordToken, SetPasswordToken> {
+  public tokenDurationSec = 3600 * 24; // 1 day
+
   public constructor() {
     super(DbSetPasswordToken);
   }
-  public tokenDurationSec = 3600 * 24; // 1 day
 
   public setIncludes(includePaths: string[]): void {
     //

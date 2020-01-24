@@ -6,6 +6,9 @@ import { DbSetPasswordToken } from '../models/db/db-set-password-token';
 import { RequestHandler, ParamsDictionary } from 'express-serve-static-core';
 
 export class SetPasswordTokenController extends ControllerBase {
+  constructor() {
+    super();
+  }
 
   public static create() {
     const router = Router();
@@ -42,11 +45,11 @@ export class SetPasswordTokenController extends ControllerBase {
     const entity = new EntitySetPasswordToken();
     
     entity.post(req.body).then((data): void => {
-        res.json(data);
-      }, (reason): void => {
-        res.status(500);
-        res.json(reason);
-      });
+      res.json(data);
+    }, (reason): void => {
+      res.status(500);
+      res.json(reason);
+    });
 
   }
 
@@ -54,27 +57,23 @@ export class SetPasswordTokenController extends ControllerBase {
   public static update(req: Request, res: Response, next: NextFunction) {
     const entity = new EntitySetPasswordToken();
 
-      entity.put(req.body).then((data): void => {
-        res.json(data);
-      }, (reason): void => {
-        res.status(500);
-        res.json(reason);
-      });
+    entity.put(req.body).then((data): void => {
+      res.json(data);
+    }, (reason): void => {
+      res.status(500);
+      res.json(reason);
+    });
   }
 
   // noinspection JSUnusedLocalSymbols, JSMethodCanBeStatic
   public static remove(req: Request, res: Response, next: NextFunction) {
     const entity = new EntitySetPasswordToken();
 
-      entity.del(req.params.id).then((data): void => {
-        res.json(data);
-      }, (reason): void => {
-        res.status(500);
-        res.json(reason);
-      });
-  }
-
-  constructor() {
-    super();
+    entity.del(req.params.id).then((data): void => {
+      res.json(data);
+    }, (reason): void => {
+      res.status(500);
+      res.json(reason);
+    });
   }
 }

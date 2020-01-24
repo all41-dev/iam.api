@@ -103,7 +103,7 @@ export class EntityUser extends Entity<DbRessource, User> {
   }
 
   public async preUpdate(user: User): Promise<User> {
-    console.info(user);
+    // console.info(user);
     if (!EntityUser.emailIsValid(user.email)) {
       throw new Error(`The email address ${user.email} is not valid. Update has been canceled`);
     }
@@ -122,12 +122,7 @@ export class EntityUser extends Entity<DbRessource, User> {
       throw new Error('User not found');
     })
   }
-  protected async dbFindByPk(pk: any): Promise<DbRessource|null> {
-    return DbRessource.findByPk(pk);
-  }
-
   public doGetFromToken(options: FindOptions, res: Response) {
-
     DbSetPasswordToken.findOne(options).then(async (spt: DbSetPasswordToken | null) => {
       const token = spt as DbSetPasswordToken;
       if (token === null) {
@@ -135,10 +130,14 @@ export class EntityUser extends Entity<DbRessource, User> {
       } else {
         if(!token.User) {throw new Error('User not set in token, include was probably missing in query'); }
         const usr = token.User
-          res.json([await this.dbToClient(usr)]);
+        res.json([await this.dbToClient(usr)]);
       }
     });
   }
+  protected async dbFindByPk(pk: any): Promise<DbRessource|null> {
+    return DbRessource.findByPk(pk);
+  }
+
   protected async dbFindAll(options: FindOptions): Promise<DbRessource[]> {
     return DbRessource.findAll(options);
   }

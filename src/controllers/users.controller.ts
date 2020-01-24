@@ -18,10 +18,10 @@ export class UsersController extends ControllerBase {
 
     router.get('/', UsersController.checkAccess(['Access/Read', 'Microservices/Identity-Service/Users']), UsersController.getAll);
     router.get('/:id', UsersController.checkAccess(['Access/Read', 'Microservices/Identity-Service/Users']), UsersController.getById);
-// tslint:disable-next-line: max-line-length
+    // tslint:disable-next-line: max-line-length
     router.get('/from-token/:token', UsersController.getFromToken);
     router.post('/authenticate', UsersController.authenticate);
-// tslint:disable-next-line: max-line-length
+    // tslint:disable-next-line: max-line-length
     router.patch('/change-password/:token', UsersController.changePassword);
     router.post('/', UsersController.checkAccess(['Access/Create', 'Microservices/Identity-Service/Users']), UsersController.post);
     router.patch('/:id', UsersController.checkAccess(['Access/Update', 'Microservices/Identity-Service/Users']), UsersController.update);
