@@ -32,7 +32,7 @@
     "xmlhttprequest": "^1.8.0"
   },
   "devDependencies": {
-    "@harps/iam.identity-model": "^1.0.3",
+    "@harps/iam.identity-model": "^1.0.4",
     "@harps/server": "^4.7.24",
     "@types/bcrypt": "^3.0.0",
     "@types/bluebird": "^3.5.29",

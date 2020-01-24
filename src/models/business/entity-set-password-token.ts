@@ -6,7 +6,7 @@ import * as NodeMailer from 'nodemailer';
 import { FindOptions, DestroyOptions } from 'sequelize';
 import * as Sequelize from 'sequelize';
 import { DbSetPasswordToken } from '../db/db-set-password-token';
-import { DbUser } from '../db/db-user';
+import { DbRessource } from '../db/db-ressource';
 
 export class EntitySetPasswordToken extends Entity<DbSetPasswordToken, SetPasswordToken> {
   public constructor() {
@@ -31,7 +31,7 @@ export class EntitySetPasswordToken extends Entity<DbSetPasswordToken, SetPasswo
   // noinspection JSMethodCanBeStatic
   public async dbToClient(inst: DbSetPasswordToken): Promise<SetPasswordToken> {
     return new SetPasswordToken(
-      inst.Id,
+      inst.uuid,
       inst.IdUser,
       inst.Message,
       inst.Expires,
@@ -46,7 +46,7 @@ export class EntitySetPasswordToken extends Entity<DbSetPasswordToken, SetPasswo
       new DbSetPasswordToken();
 
     if (clientObj.id !== null) {
-      obj.Id = clientObj.id;
+      obj.uuid = clientObj.id;
     }
     if (clientObj.idUser === undefined || clientObj.expires === undefined || clientObj.tokenHash === undefined) {
       throw new Error('invalid clientObj');
@@ -94,7 +94,7 @@ export class EntitySetPasswordToken extends Entity<DbSetPasswordToken, SetPasswo
    * Send an email to the user with the token value
    * Wording of the email will change whether the token is for a new user or a lost password
    */
-  public createSetPasswordToken = (userId: number, message: string) => {
+  public createSetPasswordToken = (userId: string, message: string) => {
     DbSetPasswordToken.findAll({ where: { expires: { [Sequelize.Op.lt]: new Date() } } })
       .then((spts: any) => {
         // delete expired tokens for all users
@@ -119,7 +119,6 @@ export class EntitySetPasswordToken extends Entity<DbSetPasswordToken, SetPasswo
             dt.setSeconds(dt.getSeconds() + this.tokenDurationSec);
             token = {
               Expires: dt,
-              Id: undefined,
               IdUser: userId,
               Message: message,
               TokenHash: crypto.randomBytes(64).toString('hex'),
@@ -133,7 +132,7 @@ export class EntitySetPasswordToken extends Entity<DbSetPasswordToken, SetPasswo
 
   public notifyUser = async (t: DbSetPasswordToken): Promise<void> => {
     // send email to user
-    const user = await DbUser.findOne({ where: { Id: t.IdUser! }});
+    const user = await DbRessource.findOne({ where: { Id: t.IdUser! }});
     if (user === null) {
       throw new Error('user not found from setPasswordToken');
     }
@@ -167,7 +166,7 @@ export class EntitySetPasswordToken extends Entity<DbSetPasswordToken, SetPasswo
       html: `<strong>${t.Message}</strong><br><a href="${link}">change your password</a>`,
       subject: 'Change your Informaticon devops password',
       text: `${t.Message}\n${link}`,
-      to: user.Email,
+      to: user.email,
     });
   }
   protected async dbFindAll(options: FindOptions): Promise<DbSetPasswordToken[]> {

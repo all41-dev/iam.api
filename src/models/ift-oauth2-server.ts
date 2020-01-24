@@ -6,8 +6,8 @@ import { Op } from 'sequelize';
 import { IdentityApi } from '../api';
 import { UsersController } from '../controllers/users.controller';
 import { DbAccessToken } from './db/db-access-token';
-import { DbClient } from './db/db-client';
-import { DbUser } from './db/db-user';
+import { DbRessource } from './db/db-ressource';
+import { DbScope } from './db/db-scope';
 
 // tslint:disable-next-line: no-var-requires
 const XMLHttpRequest = require('xmlhttprequest').XMLHttpRequest;
@@ -20,7 +20,7 @@ export class IftOAuth2Server {
         console.info('In getAccessToken OAuth method');
 
         const resp = DbAccessToken.findOne({
-          include: [DbClient, DbUser],
+          include: [DbRessource],
           where: {
             TokenValue: accessToken,
           },
@@ -48,24 +48,24 @@ export class IftOAuth2Server {
       getClient: (clientId: string, clientSecret: string): Promise<Client | Falsey> | any => {
         console.info('In getClient OAuth method');
 
-        const resp = DbClient.findOne({
+        const resp = DbRessource.findOne({
           where: {
-            ClientId: clientId,
+            uuid: clientId,
             // For mobile and native apps only, not used yet
             // ClientSecret: clientSecret
           },
-        }).then((inst: DbClient|null) => {
+        }).then((inst: DbRessource|null) => {
           if (!inst) {
             throw new Error('client not found');
           }
-          let client: DbClient = inst;
+          let client: DbRessource = inst;
 
           const obj = {
             // client_id: client.ClientId,
-            client_name: client.Name,
-            grants: client.Grants,
-            id: client.ClientId,
-            redirectUris: client.RedirectUris,
+            client_name: client.name,
+            grants: 'password',
+            id: client.uuid,
+            redirectUris: client.redirectUris,
             // accessTokenLifetime: 3600,
             // grants: ['authorization_code', 'password', 'refresh_token', 'client_credentials'], // ['password', 'client_credentials'],
             // refreshTokenLifetime: 3600 * 24,
@@ -87,31 +87,31 @@ export class IftOAuth2Server {
       saveToken: (token: Token, client: Client, user: User): any => {
         console.info('In saveToken OAuth method');
         const resp = DbAccessToken.findOne({
-          include: [DbClient, DbUser],
+          include: [DbRessource],
           where: {
             TokenValue: token.accessToken,
           },
         }).then(async (inst: DbAccessToken|null) => {
           let t: DbAccessToken;
           if (!inst) {
-            const dbClientInst = await DbClient.findOne({
+            const dbClientInst = await DbRessource.findOne({
               where: { ClientId: client.id },
             });
             if (!dbClientInst) {
               throw new Error(`client '${client.id}' not found`);
             }
-            let dbClient: DbClient = dbClientInst;
-            if (!dbClient.Id) { throw new Error('Missing Id'); }
+            let dbClient: DbRessource = dbClientInst;
+            if (!dbClient.uuid) { throw new Error('Missing Id'); }
 
             // Clean expired tokens for the user
             await DbAccessToken.destroy({
-              where: { IdClient: dbClient.Id, IdUser: user.id, ExpiresAt: { [Op.lt]: new Date() } },
+              where: { IdClient: dbClient.uuid, IdUser: user.id, ExpiresAt: { [Op.lt]: new Date() } },
             });
 
             // token not found -> create
             t = await DbAccessToken.create({
               ExpiresAt: token.accessTokenExpiresAt === undefined ? new Date() : token.accessTokenExpiresAt,
-              IdClient: dbClient.Id,
+              IdClient: dbClient.uuid,
               IdUser: user.id,
               Scopes: token.scope === undefined ? '' : Array.isArray(token.scope) ? token.scope.join('|') : token.scope,
               TokenValue: token.accessToken,
@@ -218,9 +218,9 @@ export class IftOAuth2Server {
       getUser: (username: string, password: string) => {
         console.info('In getUser OAuth method');
 
-        const resp = DbUser.findOne({
+        const resp = DbRessource.findOne({
           where: {
-            Email: username,
+            email: username,
           },
         }).then((inst) => {
           let user: User;

@@ -1,24 +1,23 @@
-import { AutoIncrement, Column, DataType, Model, PrimaryKey, Table, AllowNull, BelongsTo, ForeignKey } from 'sequelize-typescript';
-import { DbClient } from './db-client';
-import { DbUser } from './db-user';
+import { Default, Column, DataType, Model, PrimaryKey, Table, AllowNull, BelongsTo, ForeignKey } from 'sequelize-typescript';
+import { DbRessource } from './db-ressource';
 
 // @dbEntity
-@Table({ modelName: 'exchange', tableName: 'Exchange' })
+@Table({ modelName: 'accessToken', tableName: 'accessToken' })
 export class DbAccessToken extends Model<DbAccessToken> {
     @PrimaryKey
-    @AutoIncrement
-    @Column(DataType.INTEGER)
-    public Id?: number;
-
-    @ForeignKey((): typeof Model => DbClient)
+    @Default(DataType.UUIDV4)
+    @Column(DataType.UUID)
+    public uuid?: string;
+  
+    @ForeignKey((): typeof Model => DbRessource)
     @AllowNull(false)
-    @Column(DataType.INTEGER)
-    IdClient!: number;
+    @Column(DataType.UUID)
+    IdClient!: string;
 
-    @ForeignKey((): typeof Model => DbUser)
+    @ForeignKey((): typeof Model => DbRessource)
     @AllowNull(false)
-    @Column(DataType.INTEGER)
-    IdUser!: number;
+    @Column(DataType.UUID)
+    IdUser!: string;
 
     @AllowNull
     @Column(DataType.TEXT)
@@ -32,9 +31,9 @@ export class DbAccessToken extends Model<DbAccessToken> {
     @Column(DataType.DATE)
     ExpiresAt!: Date;
 
-    @BelongsTo((): typeof Model => DbClient)
-    public client?: DbClient;
+    @BelongsTo((): typeof Model => DbRessource)
+    public client?: DbRessource;
 
-    @BelongsTo((): typeof Model => DbUser)
-    public user?: DbUser;
+    @BelongsTo((): typeof Model => DbRessource)
+    public user?: DbRessource;
 }

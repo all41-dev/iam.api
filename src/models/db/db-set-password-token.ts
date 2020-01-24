@@ -1,19 +1,19 @@
-import { AutoIncrement, Column, DataType, Model, PrimaryKey, Table, AllowNull, BelongsTo, ForeignKey } from 'sequelize-typescript';
-import { DbUser } from './db-user';
+import { Default, Column, DataType, Model, PrimaryKey, Table, AllowNull, BelongsTo, ForeignKey } from 'sequelize-typescript';
+import { DbRessource } from './db-ressource';
 
 // @dbEntity
-@Table({ modelName: 'exchange', tableName: 'Exchange' })
+@Table({ modelName: 'setPasswordToken', tableName: 'setPasswordToken' })
 export class DbSetPasswordToken extends Model<DbSetPasswordToken> {
 
   @PrimaryKey
-  @AutoIncrement
-  @Column(DataType.INTEGER)
-  public Id?: number;
+  @Default(DataType.UUIDV4)
+  @Column(DataType.UUID)
+  public uuid?: string;
 
-  @ForeignKey((): typeof Model => DbUser)
+  @ForeignKey((): typeof Model => DbRessource)
   @AllowNull
-  @Column(DataType.INTEGER)
-  IdUser?: number;
+  @Column(DataType.UUID)
+  IdUser?: string;
 
   @AllowNull(false)
   @Column(DataType.DATE)
@@ -27,6 +27,6 @@ export class DbSetPasswordToken extends Model<DbSetPasswordToken> {
   @Column(DataType.STRING(200))
   TokenHash!: string;
 
-  @BelongsTo((): typeof Model => DbUser)
-  public User?: DbUser;
+  @BelongsTo((): typeof Model => DbRessource)
+  public User?: DbRessource;
 }

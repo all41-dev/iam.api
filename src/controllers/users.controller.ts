@@ -6,7 +6,7 @@ import { IdentityApi } from '../api';
 import { EntitySetPasswordToken } from '../models/business/entity-set-password-token';
 import { EntityUser } from '../models/business/entity-user';
 import { DbSetPasswordToken } from '../models/db/db-set-password-token';
-import { DbUser } from '../models/db/db-user';
+import { DbRessource } from '../models/db/db-ressource';
 import { IftOAuth2Server } from '../models/ift-oauth2-server';
 
 // tslint:disable-next-line: no-var-requires
@@ -147,7 +147,7 @@ export class UsersController extends ControllerBase {
     const entity = new EntityUser();
 
     try {
-      entity.del(req.params.id, 'Id');
+      entity.del(req.params.id, 'uuid');
     } catch (e) {
       res.statusCode = 400;
       res.send({ message: e.message });
@@ -168,17 +168,18 @@ export class UsersController extends ControllerBase {
       return;
     }
 
-    DbUser.findOne({
+    DbRessource.findOne({
       where: {
         email,
       },
-    }).then((user: DbUser|null) => {
-      if (!user || user.Id === undefined) {
+    }).then((user: DbRessource|null) => {
+      if (!user || user.uuid === undefined) {
         throw new Error('user not found');
       }
       const eu = new EntitySetPasswordToken();
+
       // tslint:disable-next-line: max-line-length
-      eu.createSetPasswordToken(user.Id, 'You have requested to reset you password for Informaticon Devops, please click the link below to proceed. If you didn\'t request this, you can ignore this e-mail.');
+      eu.createSetPasswordToken(user.uuid, 'You have requested to reset you password for Informaticon Devops, please click the link below to proceed. If you didn\'t request this, you can ignore this e-mail.');
     });
   }
 }

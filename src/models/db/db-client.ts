@@ -2,34 +2,34 @@ import { AutoIncrement, Column, DataType, Model, PrimaryKey, Table, AllowNull, H
 import { DbAccessToken } from './db-access-token';
 
 // @dbEntity
-@Table({ modelName: 'exchange', tableName: 'Exchange' })
-export class DbClient extends Model<DbClient> {
+// @Table({ modelName: 'exchange', tableName: 'Exchange' })
+// export class DbClient extends Model<DbClient> {
 
-    @PrimaryKey
-    @AutoIncrement
-    @Column(DataType.INTEGER)
-    public Id?: number;
+//     @PrimaryKey
+//     @AutoIncrement
+//     @Column(DataType.INTEGER)
+//     public Id?: number;
 
-    @AllowNull(false)
-    @Column(DataType.STRING(80))
-    ClientId!: string;
+//     @AllowNull(false)
+//     @Column(DataType.STRING(80))
+//     ClientId!: string;
 
-    @AllowNull
-    @Column(DataType.STRING(256))
-    public ClientSecret?: string;
+//     @AllowNull
+//     @Column(DataType.STRING(256))
+//     public ClientSecret?: string;
 
-    @AllowNull
-    @Column(DataType.TEXT)
-    Grants?: string;
+//     @AllowNull
+//     @Column(DataType.TEXT)
+//     Grants?: string;
 
-    @AllowNull(false)
-    @Column(DataType.STRING(100))
-    Name!: string;
+//     @AllowNull(false)
+//     @Column(DataType.STRING(100))
+//     Name!: string;
 
-    @AllowNull
-    @Column(DataType.TEXT)
-    RedirectUris?: string;
+//     @AllowNull
+//     @Column(DataType.TEXT)
+//     RedirectUris?: string;
 
-    @HasMany((): typeof Model => DbAccessToken)
-    public AccessTokens?: DbAccessToken[];
-}
+//     @HasMany((): typeof Model => DbAccessToken)
+//     public AccessTokens?: DbAccessToken[];
+// }

@@ -1,13 +1,13 @@
 import { Db } from '@harps/server';
 import { DbAccessToken } from './db-access-token';
-import { DbClient } from './db-client';
+import { DbRessource } from './db-ressource';
 import { DbSetPasswordToken } from './db-set-password-token';
-import { DbUser } from './db-user';
+import { DbScope } from './db-scope';
 
 export class ManagerDb extends Db {
   public async init(): Promise<void> {
     await this._init();
     ManagerDb.inst = this;
-    this.sequelize.addModels([DbAccessToken, DbClient, DbSetPasswordToken, DbUser]);
+    this.sequelize.addModels([DbAccessToken, DbRessource, DbSetPasswordToken, DbScope]);
   }
 }

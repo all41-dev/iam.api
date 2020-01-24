@@ -3,12 +3,12 @@ import { User } from '@harps/iam.identity-model';
 import { Response } from 'express';
 import { DestroyOptions, FindOptions, Model, Op } from 'sequelize';
 import { DbSetPasswordToken } from '../db/db-set-password-token';
-import { DbUser } from '../db/db-user';
+import { DbRessource } from '../db/db-ressource';
 import { EntitySetPasswordToken } from './entity-set-password-token';
 
-export class EntityUser extends Entity<DbUser, User> {
+export class EntityUser extends Entity<DbRessource, User> {
   public constructor() {
-    super(DbUser);
+    super(DbRessource);
   }
   public static emailIsValid = (email: string | undefined) => {
     // tslint:disable-next-line: max-line-length
@@ -26,7 +26,7 @@ export class EntityUser extends Entity<DbUser, User> {
       },
     };
     // TODO check if this works
-    const res = await DbUser.count(options).then((nb) => (nb as any) > 0);
+    const res = await DbRessource.count(options).then((nb) => (nb as any) > 0);
     return res;
   }
 
@@ -45,10 +45,10 @@ export class EntityUser extends Entity<DbUser, User> {
   }
 
   // noinspection JSMethodCanBeStatic
-  public async dbToClient(dbInst: DbUser): Promise<User> {
+  public async dbToClient(dbInst: DbRessource): Promise<User> {
     return new User(
-      dbInst.Id,
-      dbInst.Email,
+      dbInst.id,
+      dbInst.email,
     );
   }
 
@@ -63,13 +63,13 @@ export class EntityUser extends Entity<DbUser, User> {
   }
 
   // noinspection JSMethodCanBeStatic
-  public async clientToDb(clientObj: User): Promise<DbUser> {
+  public async clientToDb(clientObj: User): Promise<DbRessource> {
     const obj = clientObj.id ?
-      (await DbUser.findOrBuild({ where: { Id: clientObj.id } }))[0]:
-      new DbUser();
+      (await DbRessource.findOrBuild({ where: { Id: clientObj.id } }))[0]:
+      new DbRessource();
 
     if (!clientObj.email) { throw new Error('email must be set'); }
-    obj.Email = clientObj.email;
+    obj.email = clientObj.email;
 
     // Set through the password update process
     // obj.Hash = "hashvalue";
@@ -94,11 +94,11 @@ export class EntityUser extends Entity<DbUser, User> {
     });
     return user;
   }
-  public async postCreation(user: DbUser): Promise<DbUser> {
-    if (user.Id === undefined) {
+  public async postCreation(user: DbRessource): Promise<DbRessource> {
+    if (user.uuid === undefined) {
       throw new Error('Db user without Id');
     }
-    new EntitySetPasswordToken().createSetPasswordToken(user.Id, 'Your account has been created, please set your password to enable it.');
+    new EntitySetPasswordToken().createSetPasswordToken(user.uuid, 'Your account has been created, please set your password to enable it.');
     return user;
   }
 
@@ -122,8 +122,8 @@ export class EntityUser extends Entity<DbUser, User> {
       throw new Error('User not found');
     })
   }
-  protected async dbFindByPk(pk: any): Promise<DbUser|null> {
-    return DbUser.findByPk(pk);
+  protected async dbFindByPk(pk: any): Promise<DbRessource|null> {
+    return DbRessource.findByPk(pk);
   }
 
   public doGetFromToken(options: FindOptions, res: Response) {
@@ -139,10 +139,10 @@ export class EntityUser extends Entity<DbUser, User> {
       }
     });
   }
-  protected async dbFindAll(options: FindOptions): Promise<DbUser[]> {
-    return DbUser.findAll(options);
+  protected async dbFindAll(options: FindOptions): Promise<DbRessource[]> {
+    return DbRessource.findAll(options);
   }
   protected dbDestroy(options: DestroyOptions): Promise<number> {
-    return Promise.resolve(DbUser.destroy(options));
+    return Promise.resolve(DbRessource.destroy(options));
   }
 }
