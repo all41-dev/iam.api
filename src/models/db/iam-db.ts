@@ -4,10 +4,10 @@ import { DbRessource } from './db-ressource';
 import { DbSetPasswordToken } from './db-set-password-token';
 import { DbScope } from './db-scope';
 
-export class ManagerDb extends Db {
+export class IamDb extends Db {
   public async init(): Promise<void> {
     await this._init();
-    ManagerDb.inst = this;
+    IamDb.inst = this;
     this.sequelize.addModels([DbRessource, DbAccessToken, DbSetPasswordToken, DbScope]);
   }
 }
