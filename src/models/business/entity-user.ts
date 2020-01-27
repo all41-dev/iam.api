@@ -46,7 +46,10 @@ export class EntityUser extends Entity<DbRessource, User> {
           }
         },
       };
-    }
+    } else { 
+      this._findOptions.where = {
+        Email: {[Op.ne]: null,}
+      }}
   }
 
   // noinspection JSMethodCanBeStatic
