@@ -29,10 +29,7 @@ export class SetPasswordTokenController extends ControllerBase {
     const options: FindOptions = {};
     const entity = new EntitySetPasswordToken();
 
-    const userId = Number(req.params.id);
-    if (isNaN(userId)) {
-      throw new Error(`User id must be a number, received value is: ${req.params.id}`);
-    }
+    const userId = req.params.id;
     options.where = {
       IdUser: userId,
     };
