@@ -138,34 +138,34 @@ export class EntitySetPasswordToken extends Entity<DbSetPasswordToken, SetPasswo
       throw new Error('user not found from setPasswordToken');
     }
 
-    const smtp = NodeMailer.createTransport({
-      auth: {
-        pass: process.env.SMTP_PASSWORD,
-        user: 'bot@informaticon.com',
-      },
-      host: 'smtp-relay.gmail.com',
-      port: 465, // 587,
-      secure: true,
-    });
-    // For execution outside of Informaticon's network
     // const smtp = NodeMailer.createTransport({
     //   auth: {
     //     pass: process.env.SMTP_PASSWORD,
-    //     user: 'app@harps.ch',
+    //     user: 'bot@informaticon.com',
     //   },
-    //   host: 'mail.infomaniak.com',
-    //   port: 587,
-    //   secure: false,
+    //   host: 'smtp-relay.gmail.com',
+    //   port: 465, // 587,
+    //   secure: true,
     // });
+    // For execution outside of Informaticon's network
+    const smtp = NodeMailer.createTransport({
+      auth: {
+        pass: process.env.SMTP_PASSWORD,
+        user: 'app@harps.ch',
+      },
+      host: 'mail.infomaniak.com',
+      port: 587,
+      secure: false,
+    });
 
     // to be configured with env var
-    const baseUrl = 'localhost:8080';
-    const link = `https://${baseUrl}/change-password/${t.TokenHash}`;
+    const baseUrl = 'localhost:3020/iam';
+    const link = `http://${baseUrl}/change-password/${t.TokenHash}`;
 
     return smtp.sendMail({
-      from: 'no-reply@informaticon.com',
+      from: 'no-reply@harps.ch',
       html: `<strong>${t.Message}</strong><br><a href="${link}">change your password</a>`,
-      subject: 'Change your Informaticon devops password',
+      subject: 'Change your password',
       text: `${t.Message}\n${link}`,
       to: user.email,
     });

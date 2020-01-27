@@ -131,7 +131,7 @@ export class EntityUser extends Entity<DbRessource, User> {
       throw new Error('User not found');
     })
   }
-  public doGetFromToken(options: FindOptions, res: Response) {
+  public doGetFromToken(options: FindOptions, res: Response): void {
     DbSetPasswordToken.findOne(options).then(async (spt: DbSetPasswordToken | null) => {
       const token = spt as DbSetPasswordToken;
       if (token === null) {

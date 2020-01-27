@@ -60,7 +60,7 @@ export class UsersController extends ControllerBase {
   }
 
   // noinspection JSUnusedLocalSymbols
-  public static getFromToken(req: Request, res: Response, next: NextFunction) {
+  public static getFromToken(req: Request, res: Response, _next: NextFunction): void {
     const entity = new EntityUser();
 
     const token = req.params.token;
@@ -72,6 +72,7 @@ export class UsersController extends ControllerBase {
       where: {
         TokenHash: token,
       },
+      include: [DbRessource],
     };
 
     entity.doGetFromToken(options, res);
