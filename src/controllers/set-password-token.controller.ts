@@ -10,22 +10,22 @@ export class SetPasswordTokenController extends ControllerBase {
     super();
   }
 
-  public static create() {
+  public static create(): Router {
     const router = Router();
 
     // tslint:disable-next-line: max-line-length
-    router.get('/user/:id', SetPasswordTokenController.checkAccess(['Access/Read', 'Microservices/Identity-Service/Tokens']), SetPasswordTokenController.getByUser);
+    router.get('/user/:id', SetPasswordTokenController.checkAccess(['/root']), SetPasswordTokenController.getByUser);
     // tslint:disable-next-line: max-line-length
-    router.post('', SetPasswordTokenController.checkAccess(['Access/Create', 'Microservices/Identity-Service/Tokens']), SetPasswordTokenController.post);
+    router.post('', SetPasswordTokenController.checkAccess(['/root']), SetPasswordTokenController.post);
     // tslint:disable-next-line: max-line-length
-    router.patch('/:id', SetPasswordTokenController.checkAccess(['Access/Read', 'Microservices/Identity-Service/Tokens']), SetPasswordTokenController.update);
+    router.patch('/:id', SetPasswordTokenController.checkAccess(['/root']), SetPasswordTokenController.update);
     // tslint:disable-next-line: max-line-length
-    router.delete('/:id', SetPasswordTokenController.checkAccess(['Access/Delete', 'Microservices/Identity-Service/Tokens']), SetPasswordTokenController.remove);
+    router.delete('/:id', SetPasswordTokenController.checkAccess(['/root']), SetPasswordTokenController.remove);
 
     return router;
   }
 
-  public static getByUser(req: Request, res: Response) {
+  public static getByUser(req: Request, _res: Response): void {
     const options: FindOptions = {};
     const entity = new EntitySetPasswordToken();
 
@@ -41,7 +41,7 @@ export class SetPasswordTokenController extends ControllerBase {
   }
 
   // noinspection JSUnusedLocalSymbols, JSMethodCanBeStatic
-  public static post(req: Request, res: Response, next: NextFunction) {
+  public static post(req: Request, res: Response, _next: NextFunction): void {
     const entity = new EntitySetPasswordToken();
     
     entity.post(req.body).then((data): void => {
@@ -54,7 +54,7 @@ export class SetPasswordTokenController extends ControllerBase {
   }
 
   // noinspection JSUnusedLocalSymbols, JSMethodCanBeStatic
-  public static update(req: Request, res: Response, next: NextFunction) {
+  public static update(req: Request, res: Response, _next: NextFunction): void {
     const entity = new EntitySetPasswordToken();
 
     entity.put(req.body).then((data): void => {
@@ -66,7 +66,7 @@ export class SetPasswordTokenController extends ControllerBase {
   }
 
   // noinspection JSUnusedLocalSymbols, JSMethodCanBeStatic
-  public static remove(req: Request, res: Response, next: NextFunction) {
+  public static remove(req: Request, res: Response, _next: NextFunction): void {
     const entity = new EntitySetPasswordToken();
 
     entity.del(req.params.id).then((data): void => {
