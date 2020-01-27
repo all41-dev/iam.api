@@ -95,6 +95,7 @@ export class UsersController extends ControllerBase {
       where: {
         TokenHash: token,
       },
+      include: [DbRessource],
     };
     DbSetPasswordToken.findOne(options).then(async (spt: DbSetPasswordToken | null) => {
       const inst = spt as DbSetPasswordToken;
