@@ -78,6 +78,7 @@ export class EntityUser extends Entity<DbRessource, User> {
 
     if (!clientObj.email) { throw new Error('email must be set'); }
     obj.email = clientObj.email;
+    obj.path = `/root/users/${clientObj.email}`;
 
     // Set through the password update process
     // obj.Hash = "hashvalue";
