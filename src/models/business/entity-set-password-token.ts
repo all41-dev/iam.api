@@ -170,6 +170,11 @@ export class EntitySetPasswordToken extends Entity<DbSetPasswordToken, SetPasswo
       to: user.email,
     });
   }
+
+  protected async dbFindByPk(pk: any): Promise<DbSetPasswordToken|null> {
+    return DbSetPasswordToken.findByPk(pk);
+  }
+
   protected async dbFindAll(options: FindOptions): Promise<DbSetPasswordToken[]> {
     return DbSetPasswordToken.findAll(options);
   }
