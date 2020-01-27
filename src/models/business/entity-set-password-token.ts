@@ -133,7 +133,7 @@ export class EntitySetPasswordToken extends Entity<DbSetPasswordToken, SetPasswo
 
   public notifyUser = async (t: DbSetPasswordToken): Promise<void> => {
     // send email to user
-    const user = await DbRessource.findOne({ where: { Id: t.IdUser! }});
+    const user = await DbRessource.findOne({ where: { uuid: t.IdUser! }});
     if (user === null) {
       throw new Error('user not found from setPasswordToken');
     }

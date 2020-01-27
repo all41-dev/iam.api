@@ -10,7 +10,7 @@ export class EntityUser extends Entity<DbRessource, User> {
   public constructor() {
     super(DbRessource);
   }
-  public static emailIsValid = (email: string | undefined) => {
+  public static emailIsValid = (email: string | undefined): boolean => {
     // tslint:disable-next-line: max-line-length
     const re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
     return email === undefined ? false : re.test(email);
@@ -30,7 +30,7 @@ export class EntityUser extends Entity<DbRessource, User> {
     return res;
   }
 
-  public setIncludes(includePaths: string[]): void {
+  public setIncludes(_includePaths: string[]): void {
     //
   }
 
@@ -55,7 +55,7 @@ export class EntityUser extends Entity<DbRessource, User> {
   // noinspection JSMethodCanBeStatic
   public async dbToClient(dbInst: DbRessource): Promise<User> {
     return new User(
-      dbInst.id,
+      dbInst.uuid,
       dbInst.email,
     );
   }
