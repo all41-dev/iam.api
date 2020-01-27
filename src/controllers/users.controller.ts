@@ -89,7 +89,7 @@ export class UsersController extends ControllerBase {
     oauthSrv.token()(req, res, next);
   }
 
-  public static changePassword(req: Request, res: Response, next: NextFunction) {
+  public static changePassword(req: Request, res: Response, _next: NextFunction): void {
     const token = req.params.token;
     const options: FindOptions = {
       where: {
@@ -107,8 +107,8 @@ export class UsersController extends ControllerBase {
       const salt = Bcrypt.genSaltSync(10);
       const hash = Bcrypt.hashSync(req.body.password, salt);
       user.update({
-        Hash: hash,
-        Salt: salt,
+        hash: hash,
+        salt: salt,
       }).then(() => {
         if (spt === null) {
           throw new Error('setPasswordToken is null');
