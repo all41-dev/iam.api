@@ -40,8 +40,10 @@ export class EntityUser extends Entity<DbRessource, User> {
     if (filter !== undefined) {
       this._findOptions.where = {
         Email: {
-          [Op.like]: `%${filter}%`,
-          [Op.ne]: null,
+          [Op.and]: {
+            [Op.like]: `%${filter}%`,
+            [Op.ne]: null,
+          }
         },
       };
     }
