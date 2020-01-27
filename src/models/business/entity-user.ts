@@ -39,7 +39,10 @@ export class EntityUser extends Entity<DbRessource, User> {
     // const filter: string | undefined = req.query.filter;
     if (filter !== undefined) {
       this._findOptions.where = {
-        Email: { [Op.like]: `%${filter}%` },
+        Email: {
+          [Op.like]: `%${filter}%`,
+          [Op.ne]: null,
+        },
       };
     }
   }
