@@ -1,4 +1,4 @@
-import { Entity } from '@harps/server';
+import { Entity } from '@all41/server';
 import { SetPasswordToken } from '@harps/iam.identity-model';
 import * as crypto from 'crypto';
 import { Request } from 'express';

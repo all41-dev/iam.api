@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/camelcase */
-import { ControllerBase } from '@harps/server';
+import { ControllerBase } from '@all41/server';
 import { NextFunction, Request, Response, Router } from 'express';
 
 export class OAuthController extends ControllerBase {

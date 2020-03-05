@@ -1,4 +1,4 @@
-import { ControllerBase } from '@harps/server';
+import { ControllerBase } from '@all41/server';
 import * as Bcrypt from 'bcrypt';
 import { NextFunction, Request, Response, Router } from 'express';
 import { FindOptions, Model } from 'sequelize';

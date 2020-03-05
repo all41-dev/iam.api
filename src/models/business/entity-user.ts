@@ -1,4 +1,4 @@
-import { Entity } from '@harps/server';
+import { Entity } from '@all41/server';
 import { User } from '@harps/iam.identity-model';
 import { Response } from 'express';
 import { DestroyOptions, FindOptions, Model, Op } from 'sequelize';

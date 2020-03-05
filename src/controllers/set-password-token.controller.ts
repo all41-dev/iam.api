@@ -1,4 +1,4 @@
-import { ControllerBase } from '@harps/server';
+import { ControllerBase } from '@all41/server';
 import { NextFunction, Request, Response, Router } from 'express';
 import { FindOptions } from 'sequelize';
 import { EntitySetPasswordToken } from '../models/business/entity-set-password-token';
