@@ -1,63 +1,54 @@
-create table Clients
+create schema iam collate latin1_swedish_ci;
+
+create table accessToken
 (
-	Id int auto_increment
+	uuid char(36) not null
 		primary key,
-	ClientId varchar(80) not null,
-	ClientSecret varchar(80) null,
-	Name varchar(100) not null,
-	RedirectUris text,
-	Grants text,
-	CreatedAt timestamp null,
-	UpdatedAt timestamp null,
-	constraint Clients_ClientId_uindex
-		unique (ClientId),
-	constraint Clients_ClientSecret_uindex
-		unique (ClientSecret)
+	idClient char(36) not null,
+	idUser char(36) not null,
+	scopes text null,
+	tokenValue varchar(256) not null,
+	expiresAt timestamp null,
+	createdAt timestamp null,
+	updatedAt timestamp null
 );
 
-create table Users
+create table ressource
 (
-	Id int auto_increment
-		primary key,
-	Email varchar(200) not null,
-	Hash char(128) null,
-	Salt char(128) null,
-	CreatedAt datetime null,
-	UpdatedAt datetime null,
-	constraint Users_Email_uindex
-		unique (Email)
+	uuid char(36) null,
+	path varchar(2000) not null,
+	secret varchar(200) null,
+	redirectUris varchar(2000) null,
+	email varchar(200) null,
+	name varchar(200) null,
+	hash char(128) null,
+	salt char(128) null,
+	parentUuid char(36) null,
+	scopeUuids varchar(2000) null,
+	groupUuids varchar(2000) null,
+	createdAt timestamp null,
+	updatedAt timestamp null
 );
 
-create table AccessTokens
+create table scope
 (
-	Id int auto_increment
+	uuid char(36) not null
 		primary key,
-	TokenValue varchar(256) not null,
-	ExpiresAt timestamp default current_timestamp() not null on update current_timestamp(),
-	Scopes text null,
-	IdClient int not null,
-	IdUser int not null,
-	CreatedAt timestamp null,
-	UpdatedAt timestamp null,
-	constraint AccessTokens_Clients_Id_fk
-		foreign key (IdClient) references Clients (Id),
-	constraint AccessTokens_Users_Id_fk
-		foreign key (IdUser) references Users (Id)
+	name varchar(200) null,
+	ressourcePaths varchar(2000) null,
+	createdAt timestamp null,
+	updatedAt timestamp null
 );
 
-create table SetPasswordTokens
+create table setPasswordToken
 (
-	Id int auto_increment
+	uuid char(36) not null
 		primary key,
-	IdUser int null,
-	Message varchar(2000) null,
+	IdUser char(36) not null,
 	Expires timestamp default current_timestamp() not null on update current_timestamp(),
-	CreatedAt timestamp null,
-	UpdatedAt timestamp null,
+	Message varchar(2000) null,
 	TokenHash varchar(200) not null,
-	constraint SetPasswordTokens_Users_Id_fk
-		foreign key (IdUser) references Users (Id)
+	createdAt timestamp null,
+	updatedAt timestamp null
 );
 
-INSERT INTO Users (Id, Email, Hash, Salt, CreatedAt, UpdatedAt) VALUES (1, 'admin@informaticon.com', '$2b$10$5/zdmxXz0oW7QWZcAZesdOXgasDCnU4vqe2Ure8SMD4WZ6sxOfGFu', '$2b$10$5/zdmxXz0oW7QWZcAZesdO', '2018-11-21 15:55:46', '2018-11-28 14:28:24');
-INSERT INTO Clients (Id, ClientId, ClientSecret, Name, CreatedAt, UpdatedAt, RedirectUris, Grants) VALUES (1, '47f3ee72b1856716455dd83b32f1031e.users.devops.informaticon.com', '', 'users.devops.informaticon.com', '2018-12-06 12:30:40', '2018-12-06 09:44:13', null, 'password');
