@@ -26,15 +26,9 @@ export class SetPasswordTokenController extends ControllerBase {
   }
 
   public static getByUser(req: Request, _res: Response): void {
-    const options: FindOptions = {};
     const entity = new EntitySetPasswordToken();
 
-    const userId = req.params.id;
-    options.where = {
-      IdUser: userId,
-    };
-
-    entity.get(req.params.id);
+    entity.get(req.params.id, 'IdUser');
   }
 
   // noinspection JSUnusedLocalSymbols, JSMethodCanBeStatic
@@ -66,7 +60,7 @@ export class SetPasswordTokenController extends ControllerBase {
   public static remove(req: Request, res: Response, _next: NextFunction): void {
     const entity = new EntitySetPasswordToken();
 
-    entity.del(req.params.id).then((data): void => {
+    entity.del(req.params.id, 'IdUser').then((data): void => {
       res.json(data);
     }, (reason): void => {
       res.status(500);
