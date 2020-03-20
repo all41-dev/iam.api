@@ -159,8 +159,8 @@ export class EntitySetPasswordToken extends Entity<DbSetPasswordToken, SetPasswo
     });
 
     // to be configured with env var
-    const baseUrl = 'localhost:3020/iam';
-    const link = `http://${baseUrl}/change-password/${t.TokenHash}`;
+    // const baseUrl = 'localhost:3020/iam';
+    const link = `${process.env.OAUTH_ROOT_URL}/change-password/${t.TokenHash}`;
 
     return smtp.sendMail({
       from: 'no-reply@harps.ch',
