@@ -1,4 +1,4 @@
--- create schema iam collate latin1_swedish_ci;
+-- create schema iam collate utf8_general_ci;
 
 create table accessToken
 (
