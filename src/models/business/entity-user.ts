@@ -135,9 +135,9 @@ export class EntityUser extends Entity<DbRessource, User> {
     DbSetPasswordToken.findOne(options).then(async (spt: DbSetPasswordToken | null) => {
       const token = spt as DbSetPasswordToken;
       if (token === null) {
-        res.statusCode = 500;
-        res.statusMessage = 'The provided token is not valid.';
-        // res.json('The provided token is not valid.');
+        // res.statusCode = 500;
+        // res.statusMessage = 'The provided token is not valid.';
+        res.json('The provided token is not valid.');
       } else {
         if(!token.User) {throw new Error('User not set in token, include was probably missing in query'); }
         const usr = token.User
