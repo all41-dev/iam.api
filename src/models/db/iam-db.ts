@@ -4,7 +4,7 @@ import { DbRessource } from './db-ressource';
 import { DbSetPasswordToken } from './db-set-password-token';
 import { DbScope } from './db-scope';
 
-export class IamDb extends Db {
+export class IamDb extends Db<IamDb> {
   public async init(): Promise<void> {
     await this._init();
     IamDb.inst = this;
