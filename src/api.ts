@@ -1,4 +1,4 @@
-import { Api } from '@all41/server';
+import { Api } from '@all41-dev/server';
 import { Router, Request, Response } from 'express';
 import { OAuthController } from './controllers/oauth.controller';
 import { SetPasswordTokenController } from './controllers/set-password-token.controller';

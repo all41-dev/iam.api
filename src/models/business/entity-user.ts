@@ -1,5 +1,5 @@
-import { Entity } from '@all41/server';
-import { User } from '@harps/iam.identity-model';
+import { Entity } from '@all41-dev/server';
+import { User } from '@all41-dev/iam.model';
 import { Response } from 'express';
 import { DestroyOptions, FindOptions, Model, Op } from 'sequelize';
 import { DbSetPasswordToken } from '../db/db-set-password-token';

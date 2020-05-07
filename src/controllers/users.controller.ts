@@ -1,4 +1,4 @@
-import { ControllerBase } from '@all41/server';
+import { ControllerBase } from '@all41-dev/server';
 import * as Bcrypt from 'bcrypt';
 import { NextFunction, Request, Response, Router } from 'express';
 import { FindOptions, Model } from 'sequelize';
