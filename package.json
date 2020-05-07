@@ -1,5 +1,5 @@
 {
-  "name": "@harps/iam.identity-api",
+  "name": "@all41-dev/iam.api",
   "version": "1.0.32",
   "description": "Api serving user management operations and OAuth service",
   "main": "dist/index.js",
@@ -32,8 +32,8 @@
     "xmlhttprequest": "^1.8.0"
   },
   "devDependencies": {
-    "@all41/server": "^1.2.3",
-    "@harps/iam.identity-model": "^1.0.5",
+    "@all41-dev/server": "^1.3.0",
+    "@all41-dev/iam.model": "^1.0.5",
     "@types/bcrypt": "^3.0.0",
     "@types/bluebird": "^3.5.30",
     "@types/cron": "^1.7.2",
