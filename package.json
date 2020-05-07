@@ -18,12 +18,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/informaticon/devops.identity-api.git"
+    "url": "https://github.com/all41-dev/iam.api.git"
   },
   "keywords": [],
   "author": "eric@harps.ch",
   "license": "ISC",
-  "homepage": "https://github.com/informaticon/devops.identity-api",
+  "homepage": "https://github.com/all41-dev/iam.api",
   "dependencies": {
     "bcrypt": "^4.0.1",
     "express-oauth-server": "^2.0.0",
