@@ -1,16 +1,13 @@
 import { ControllerBase } from '@all41-dev/server';
 import * as Bcrypt from 'bcrypt';
 import { NextFunction, Request, Response, Router } from 'express';
-import { FindOptions, Model } from 'sequelize';
+import { FindOptions } from 'sequelize';
 import { IdentityApi } from '../api';
 import { EntitySetPasswordToken } from '../models/business/entity-set-password-token';
 import { EntityUser } from '../models/business/entity-user';
 import { DbSetPasswordToken } from '../models/db/db-set-password-token';
 import { DbRessource } from '../models/db/db-ressource';
 import { HarpsOAuth2Server } from '../models/ift-oauth2-server';
-
-// tslint:disable-next-line: no-var-requires
-const XMLHttpRequest = require('xmlhttprequest').XMLHttpRequest;
 
 export class UsersController extends ControllerBase {
   public static create(): Router {
@@ -32,12 +29,15 @@ export class UsersController extends ControllerBase {
   }
 
   // noinspection JSUnusedLocalSymbols
-  public static getAll(req: Request, res: Response, next: NextFunction): void {
+  public static getAll(req: Request, res: Response): void {
     // Since here, the user is considered as authorized
     const entity = new EntityUser();
 
-    entity.setFilter(req.query.filter);
-    entity.setIncludes(req.query.include);
+    if (req.query.filter && typeof req.query.filter === 'string')
+      entity.setFilter(req.query.filter);
+    
+    if (req.query.include && (typeof req.query.include === 'string' || (Array.isArray(req.query.include))))
+      entity.setIncludes(req.query.include);
 
     entity.get().then((data): void => {
       res.json(data);
@@ -50,7 +50,10 @@ export class UsersController extends ControllerBase {
   // noinspection JSUnusedLocalSymbols
   public static getById(req: Request, res: Response, next: NextFunction) {
     const entity = new EntityUser();
-    entity.setIncludes(req.query.include);
+
+    if (req.query.include && (typeof req.query.include === 'string' || (Array.isArray(req.query.include))))
+      entity.setIncludes(req.query.include);
+
     entity.getByPk(req.params.id).then((data): void => {
       res.json(data);
     }, (reason): void => {

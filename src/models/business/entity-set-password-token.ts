@@ -21,7 +21,7 @@ export class EntitySetPasswordToken extends Entity<DbSetPasswordToken, SetPasswo
 
   // noinspection JSMethodCanBeStatic
   public setFilter(req: Request): void {
-    const filter: string | undefined = req.query.filter;
+    const filter: string | undefined = req.query.filter as string | undefined;
     if (filter !== undefined) {
       this._findOptions.where = {
         // Email: {[UsersApi.inst.sequelize.Op.like]: `%${filter}%`}

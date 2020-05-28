@@ -1,4 +1,4 @@
-import { Db } from '@all41-dev/server';
+import { Db } from '@all41-dev/db-tools';
 import { DbAccessToken } from './db-access-token';
 import { DbRessource } from './db-ressource';
 import { DbSetPasswordToken } from './db-set-password-token';

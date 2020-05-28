@@ -30,7 +30,7 @@ export class EntityUser extends Entity<DbRessource, User> {
     return res;
   }
 
-  public setIncludes(_includePaths: string[]): void {
+  public setIncludes(_includePaths: undefined | string | string[] | any): void {
     //
   }
 
