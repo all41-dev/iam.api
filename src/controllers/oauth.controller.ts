@@ -1,13 +1,12 @@
-/* eslint-disable @typescript-eslint/camelcase */
 import { ControllerBase } from '@all41-dev/server';
-import { NextFunction, Request, Response, Router } from 'express';
+import { Request, Response, Router } from 'express';
 
 export class OAuthController extends ControllerBase {
   constructor() {
     super();
   }
 
-  public static create() {
+  public static create(): Router {
     const router = Router();
 
     // Welcome page
@@ -19,12 +18,12 @@ export class OAuthController extends ControllerBase {
   }
 
   // noinspection JSUnusedLocalSymbols, JSMethodCanBeStatic
-  public static index(req: Request, res: Response, next: NextFunction) {
+  public static index(req: Request, res: Response): void {
     res.render('index', { title: 'Informaticon OAuth Server' });
   }
 
   // noinspection JSUnusedLocalSymbols, JSMethodCanBeStatic
-  public static getConfig(req: Request, res: Response, next: NextFunction) {
+  public static getConfig(req: Request, res: Response): void {
     const host = req.get('host');
     const protocol = !host || host.startsWith('localhost') ? 'http' : 'https';
     const url = (req.originalUrl as string);
@@ -85,7 +84,7 @@ export class OAuthController extends ControllerBase {
   }
 
   // noinspection JSUnusedLocalSymbols, JSMethodCanBeStatic
-  public static getCertificates(req: Request, res: Response, next: NextFunction) {
+  public static getCertificates(req: Request, res: Response): void {
     res.json({
       keys: [
         {

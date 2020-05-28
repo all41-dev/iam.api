@@ -15,10 +15,8 @@ export class UsersController extends ControllerBase {
 
     router.get('/', UsersController.checkAccess(['/root']), UsersController.getAll);
     router.get('/:id', UsersController.checkAccess(['/root']), UsersController.getById);
-    // tslint:disable-next-line: max-line-length
     router.get('/from-token/:token', UsersController.getFromToken);
     router.post('/authenticate', UsersController.authenticate);
-    // tslint:disable-next-line: max-line-length
     router.patch('/change-password/:token', UsersController.changePassword);
     router.post('/', UsersController.checkAccess(['/root']), UsersController.post);
     router.patch('/:id', UsersController.checkAccess(['/root']), UsersController.update);
@@ -28,7 +26,6 @@ export class UsersController extends ControllerBase {
     return router;
   }
 
-  // noinspection JSUnusedLocalSymbols
   public static getAll(req: Request, res: Response): void {
     // Since here, the user is considered as authorized
     const entity = new EntityUser();
@@ -48,7 +45,7 @@ export class UsersController extends ControllerBase {
   }
 
   // noinspection JSUnusedLocalSymbols
-  public static getById(req: Request, res: Response, next: NextFunction) {
+  public static getById(req: Request, res: Response): void {
     const entity = new EntityUser();
 
     if (req.query.include && (typeof req.query.include === 'string' || (Array.isArray(req.query.include))))
@@ -63,7 +60,7 @@ export class UsersController extends ControllerBase {
   }
 
   // noinspection JSUnusedLocalSymbols
-  public static getFromToken(req: Request, res: Response, _next: NextFunction): void {
+  public static getFromToken(req: Request, res: Response): void {
     const entity = new EntityUser();
 
     const token = req.params.token;
@@ -92,7 +89,7 @@ export class UsersController extends ControllerBase {
     oauthSrv.token()(req, res, next);
   }
 
-  public static changePassword(req: Request, res: Response, _next: NextFunction): void {
+  public static changePassword(req: Request, res: Response): void {
     const token = req.params.token;
     const options: FindOptions = {
       where: {
@@ -124,7 +121,7 @@ export class UsersController extends ControllerBase {
     });
   }
 
-  public static post(req: Request, res: Response, next: NextFunction) {
+  public static post(req: Request, res: Response): void {
     const entity = new EntityUser();
 
     entity.post(req.body).then((data): void => {
@@ -135,7 +132,7 @@ export class UsersController extends ControllerBase {
     });
   }
 
-  public static update(req: Request, res: Response, next: NextFunction) {
+  public static update(req: Request, res: Response): void {
     const entity = new EntityUser();
     if (!req.params.id || !parseInt(req.params.id)) { throw new Error('number id parameter must be provided when updating an exchange'); }
 
@@ -147,7 +144,7 @@ export class UsersController extends ControllerBase {
     });
   }
 
-  public static remove(req: Request, res: Response, next: NextFunction) {
+  public static remove(req: Request, res: Response): void {
     const entity = new EntityUser();
 
     try {
@@ -158,7 +155,7 @@ export class UsersController extends ControllerBase {
     }
   }
 
-  public static async lostPassword(req: Request, res: Response, next: NextFunction) {
+  public static async lostPassword(req: Request, res: Response): Promise<void> {
     const email: string = req.body.email.toLowerCase();
 
     if (!EntityUser.emailIsValid(email)) {

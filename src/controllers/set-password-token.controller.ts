@@ -1,9 +1,6 @@
 import { ControllerBase } from '@all41-dev/server';
-import { NextFunction, Request, Response, Router } from 'express';
-import { FindOptions } from 'sequelize';
+import { Request, Response, Router } from 'express';
 import { EntitySetPasswordToken } from '../models/business/entity-set-password-token';
-import { DbSetPasswordToken } from '../models/db/db-set-password-token';
-import { RequestHandler, ParamsDictionary } from 'express-serve-static-core';
 
 export class SetPasswordTokenController extends ControllerBase {
   constructor() {
@@ -13,26 +10,21 @@ export class SetPasswordTokenController extends ControllerBase {
   public static create(): Router {
     const router = Router();
 
-    // tslint:disable-next-line: max-line-length
     router.get('/user/:id', SetPasswordTokenController.checkAccess(['/root']), SetPasswordTokenController.getByUser);
-    // tslint:disable-next-line: max-line-length
     router.post('', SetPasswordTokenController.checkAccess(['/root']), SetPasswordTokenController.post);
-    // tslint:disable-next-line: max-line-length
     router.patch('/:id', SetPasswordTokenController.checkAccess(['/root']), SetPasswordTokenController.update);
-    // tslint:disable-next-line: max-line-length
     router.delete('/:id', SetPasswordTokenController.checkAccess(['/root']), SetPasswordTokenController.remove);
 
     return router;
   }
 
-  public static getByUser(req: Request, _res: Response): void {
+  public static getByUser(req: Request): void {
     const entity = new EntitySetPasswordToken();
 
     entity.get(req.params.id, 'IdUser');
   }
 
-  // noinspection JSUnusedLocalSymbols, JSMethodCanBeStatic
-  public static post(req: Request, res: Response, _next: NextFunction): void {
+  public static post(req: Request, res: Response): void {
     const entity = new EntitySetPasswordToken();
     
     entity.post(req.body).then((data): void => {
@@ -44,8 +36,7 @@ export class SetPasswordTokenController extends ControllerBase {
 
   }
 
-  // noinspection JSUnusedLocalSymbols, JSMethodCanBeStatic
-  public static update(req: Request, res: Response, _next: NextFunction): void {
+  public static update(req: Request, res: Response): void {
     const entity = new EntitySetPasswordToken();
 
     entity.put(req.body).then((data): void => {
@@ -56,8 +47,7 @@ export class SetPasswordTokenController extends ControllerBase {
     });
   }
 
-  // noinspection JSUnusedLocalSymbols, JSMethodCanBeStatic
-  public static remove(req: Request, res: Response, _next: NextFunction): void {
+  public static remove(req: Request, res: Response): void {
     const entity = new EntitySetPasswordToken();
 
     entity.del(req.params.id, 'IdUser').then((data): void => {
