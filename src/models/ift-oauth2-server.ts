@@ -261,7 +261,9 @@ export class HarpsOAuth2Server {
 
       const userscope: string = await HarpsOAuth2Server.getUserScopes(token.user.username);
       const host = IdentityApi.req.headers.host;
-      const protocol = !host || host.startsWith('localhost') ? 'http' : 'https';
+      // const protocol = !host || host.startsWith('localhost') ? 'http' : 'https';
+      const referer = IdentityApi.req.headers.referer;
+      const protocol = referer ? referer.substr(0, referer.indexOf('://')) : 'http';
       const clientUrl = `${protocol}://${host}/iam`;
 
       return Jwt.sign({
