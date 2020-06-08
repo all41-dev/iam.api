@@ -25,7 +25,9 @@ export class OAuthController extends ControllerBase {
   // noinspection JSUnusedLocalSymbols, JSMethodCanBeStatic
   public static getConfig(req: Request, res: Response): void {
     const host = req.get('host');
-    const protocol = !host || host.startsWith('localhost') ? 'http' : 'https';
+    // const protocol = !host || host.startsWith('localhost') ? 'http' : 'https';
+    const referer = req.get('referer');
+    const protocol = referer ? referer.substr(0, referer.indexOf('://')) : 'http';
     const url = (req.originalUrl as string);
     const apiHost = protocol + '://' + host + (req.originalUrl as string).substr(0, url.indexOf('/.well-known/openid-configuration'));
 
