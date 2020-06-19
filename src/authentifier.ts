@@ -1,16 +1,15 @@
 import * as Http from 'request-promise';
 
 export class Authentifier {
-  public static async getToken(opt: { url: string; client: string; secret: string; scope: string; }): Promise<string> {
+  private static _cached: {[key: string]: {token: string; expires: number }};
+  public static async getToken(opt: { url: string; client: string; secret: string; scope: string }): Promise<string> {
     if (!Authentifier._cached) {Authentifier._cached = {}; }
     if (!Authentifier._cached[opt.client] || Authentifier._cached[opt.client].expires <= new Date().getTime()) {
       const body = {
-        /* eslint-disable @typescript-eslint/camelcase */
         client_id: opt.client,
         client_secret: opt.secret,
         grant_type: 'client_credentials',
         scope: opt.scope,
-        /* eslint-enable @typescript-eslint/camelcase */
       };
       const resp = await Http.post(opt.url, {
         form: body,
@@ -27,5 +26,4 @@ export class Authentifier {
     }
     return Authentifier._cached[opt.client].token;
   }
-  private static _cached: {[key: string]: {token: string; expires: number }};
 }
