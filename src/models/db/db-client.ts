@@ -1,5 +1,5 @@
-import { AutoIncrement, Column, DataType, Model, PrimaryKey, Table, AllowNull, HasMany } from 'sequelize-typescript';
-import { DbAccessToken } from './db-access-token';
+// import { AutoIncrement, Column, DataType, Model, PrimaryKey, Table, AllowNull, HasMany } from 'sequelize-typescript';
+// import { DbAccessToken } from './db-access-token';
 
 // @dbEntity
 // @Table({ modelName: 'exchange', tableName: 'Exchange' })

@@ -1,7 +1,7 @@
 import { Entity } from '@all41-dev/server';
 import { User } from '@all41-dev/iam.model';
 import { Response } from 'express';
-import { DestroyOptions, FindOptions, Model, Op } from 'sequelize';
+import { DestroyOptions, FindOptions, Op } from 'sequelize';
 import { DbSetPasswordToken } from '../db/db-set-password-token';
 import { DbRessource } from '../db/db-ressource';
 import { EntitySetPasswordToken } from './entity-set-password-token';
@@ -30,11 +30,11 @@ export class EntityUser extends Entity<DbRessource, User> {
     return res;
   }
 
-  public setIncludes(_includePaths: string[]): void {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  public setIncludes(_includePaths: undefined | string | string[] | any): void {
     //
   }
 
-  // noinspection JSMethodCanBeStatic
   public setFilter(filter?: string): void {
     // const filter: string | undefined = req.query.filter;
     if (filter !== undefined) {
@@ -52,7 +52,6 @@ export class EntityUser extends Entity<DbRessource, User> {
       }}
   }
 
-  // noinspection JSMethodCanBeStatic
   public async dbToClient(dbInst: DbRessource): Promise<User> {
     return new User(
       dbInst.uuid,
@@ -60,7 +59,7 @@ export class EntityUser extends Entity<DbRessource, User> {
     );
   }
 
-  // noinspection JSMethodCanBeStatic
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
   public jsonToClient(obj: any): User {
     const email: string = obj.email.toLowerCase();
 
@@ -123,6 +122,7 @@ export class EntityUser extends Entity<DbRessource, User> {
     const options: DestroyOptions = { where: { IdUser: id } };
     return DbSetPasswordToken.destroy(options);
   }
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
   public async getByPk(pk: any): Promise<User> {
     return this.dbFindByPk(pk).then((res) => {
       if (res) {
@@ -145,7 +145,7 @@ export class EntityUser extends Entity<DbRessource, User> {
       }
     });
   }
-  protected async dbFindByPk(pk: any): Promise<DbRessource|null> {
+  protected async dbFindByPk(pk: string): Promise<DbRessource|null> {
     return DbRessource.findByPk(pk);
   }
 

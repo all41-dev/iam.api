@@ -4,15 +4,12 @@ import * as Jwt from 'jsonwebtoken';
 import { AuthorizationCode, Client, Falsey, Token, User } from 'oauth2-server';
 import { Op } from 'sequelize';
 import { IdentityApi } from '../api';
-import { UsersController } from '../controllers/users.controller';
 import { DbAccessToken } from './db/db-access-token';
 import { DbRessource } from './db/db-ressource';
 import { DbScope } from './db/db-scope';
 
-// tslint:disable-next-line: no-var-requires
-const XMLHttpRequest = require('xmlhttprequest').XMLHttpRequest;
-
 export class HarpsOAuth2Server {
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
   public static getInstance(options: any): ExpressOAuthServer {
     const opt = options === undefined ? {} : options;
     opt.model = {
@@ -45,7 +42,8 @@ export class HarpsOAuth2Server {
         // console.info('ready to return promise');
         return resp;
       },
-      getClient: (clientId: string, clientSecret: string): Promise<Client | Falsey> | any => {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      getClient: (clientId: string, _clientSecret: string): Promise<Client | Falsey> | any => {
         // console.info('In getClient OAuth method');
 
         const resp = DbRessource.findOne({
@@ -62,7 +60,6 @@ export class HarpsOAuth2Server {
 
           const obj = {
             // client_id: client.ClientId,
-            // eslint-disable-next-line @typescript-eslint/camelcase
             client_name: client.name,
             grants: ['password'],
             id: client.uuid,
@@ -131,14 +128,12 @@ export class HarpsOAuth2Server {
             user,
             Client: client,
             User: user,
-            // eslint-disable-next-line @typescript-eslint/camelcase
             id_token: undefined,
           };
           if (IdentityApi.req === undefined || IdentityApi.req.body.nonce === undefined) {
             throw new Error('request or nonce value is not defined');
           }
 
-          // eslint-disable-next-line @typescript-eslint/camelcase
           obj.id_token = await HarpsOAuth2Server.getIdToken(obj, IdentityApi.req.body.nonce);
 
           return obj;
@@ -184,26 +179,29 @@ export class HarpsOAuth2Server {
       //         return Promise.resolve('');
       //     });
       // },
-      // tslint:disable-next-line: object-literal-sort-keys
-      generateAuthorizationCode: (client: Client, user: User, scope: string | string[]) => {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      generateAuthorizationCode: (_client: Client, _user: User, _scope: string | string[]) => {
         // console.info('In generateAuthorizationCode OAuth method');
         return new Promise<string>(() => {
           return Promise.resolve('');
         });
       },
-      getAuthorizationCode: (authorizationCode: string) => {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      getAuthorizationCode: (_authorizationCode: string) => {
         // console.info('In getAuthorizationCode OAuth method');
         return new Promise<AuthorizationCode | Falsey>(() => {
           return Promise.resolve('');
         });
       },
-      saveAuthorizationCode: (code: AuthorizationCode, client: Client, user: User) => {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      saveAuthorizationCode: (_code: AuthorizationCode, _client: Client, _user: User) => {
         // console.info('In saveAuthorizationCode OAuth method');
         return new Promise<AuthorizationCode | Falsey>(() => {
           return Promise.resolve('');
         });
       },
-      revokeAuthorizationCode: (code: AuthorizationCode) => {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      revokeAuthorizationCode: (_code: AuthorizationCode) => {
         // console.info('In revokeAuthorizationCode OAuth method');
         return new Promise<boolean>(() => {
           return Promise.resolve(false);
@@ -216,7 +214,8 @@ export class HarpsOAuth2Server {
       //         return Promise.resolve('');
       //     });
       // },
-      getUserFromClient: (client: Client): Promise<User|Falsey> => {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      getUserFromClient: (_client: Client): Promise<User|Falsey> => {
         // console.info('In getUserFromClient OAuth method');
         return new Promise<User | Falsey>(() => {
           return Promise.resolve('');
@@ -262,7 +261,9 @@ export class HarpsOAuth2Server {
 
       const userscope: string = await HarpsOAuth2Server.getUserScopes(token.user.username);
       const host = IdentityApi.req.headers.host;
-      const protocol = !host || host.startsWith('localhost') ? 'http' : 'https';
+      // const protocol = !host || host.startsWith('localhost') ? 'http' : 'https';
+      const referer = IdentityApi.req.headers.referer;
+      const protocol = referer ? referer.substr(0, referer.indexOf('://')) : 'http';
       const clientUrl = `${protocol}://${host}/iam`;
 
       return Jwt.sign({
@@ -272,7 +273,6 @@ export class HarpsOAuth2Server {
         aud: token.client.id,
         sub: token.user.id,
         username: token.user.username,
-        // eslint-disable-next-line @typescript-eslint/camelcase
         at_hash: token.accessToken,
         // jti: nonce,
         nonce,
@@ -313,7 +313,8 @@ export class HarpsOAuth2Server {
     }
   }
 
-  public static async getUserScopes(username: string, requiredScopes?: string): Promise<string> {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  public static async getUserScopes(username: string, _requiredScopes?: string): Promise<string> {
     return DbRessource.findOne({where: {email: username}}).then(async (user: DbRessource|null) => {
       if (!user) { throw new Error('User not found'); }
 

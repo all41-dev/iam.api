@@ -15,13 +15,14 @@ export class EntitySetPasswordToken extends Entity<DbSetPasswordToken, SetPasswo
     super(DbSetPasswordToken);
   }
 
-  public setIncludes(includePaths: string[]): void {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  public setIncludes(_includePaths: string[]): void {
     //
   }
 
   // noinspection JSMethodCanBeStatic
   public setFilter(req: Request): void {
-    const filter: string | undefined = req.query.filter;
+    const filter: string | undefined = req.query.filter as string | undefined;
     if (filter !== undefined) {
       this._findOptions.where = {
         // Email: {[UsersApi.inst.sequelize.Op.like]: `%${filter}%`}
@@ -82,7 +83,8 @@ export class EntitySetPasswordToken extends Entity<DbSetPasswordToken, SetPasswo
     return user;
   }
 
-  public async preDelete(id: number): Promise<number> {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  public async preDelete(_id: number): Promise<number> {
     // throw new Error('not implemented yet');
     return 0;
   }
@@ -95,7 +97,7 @@ export class EntitySetPasswordToken extends Entity<DbSetPasswordToken, SetPasswo
    * Send an email to the user with the token value
    * Wording of the email will change whether the token is for a new user or a lost password
    */
-  public createSetPasswordToken = (userId: string, message: string) => {
+  public createSetPasswordToken = (userId: string, message: string): void => {
     DbSetPasswordToken.findAll({ where: { expires: { [Sequelize.Op.lt]: new Date() } } })
       .then((spts: any) => {
         // delete expired tokens for all users
@@ -132,8 +134,9 @@ export class EntitySetPasswordToken extends Entity<DbSetPasswordToken, SetPasswo
   }
 
   public notifyUser = async (t: DbSetPasswordToken): Promise<void> => {
+    if (!t.IdUser) throw new Error('IdUser missing');
     // send email to user
-    const user = await DbRessource.findOne({ where: { uuid: t.IdUser! }});
+    const user = await DbRessource.findOne({ where: { uuid: t.IdUser }});
     if (user === null) {
       throw new Error('user not found from setPasswordToken');
     }
@@ -171,7 +174,7 @@ export class EntitySetPasswordToken extends Entity<DbSetPasswordToken, SetPasswo
     });
   }
 
-  protected async dbFindByPk(pk: any): Promise<DbSetPasswordToken|null> {
+  protected async dbFindByPk(pk: string): Promise<DbSetPasswordToken|null> {
     return DbSetPasswordToken.findByPk(pk);
   }
 

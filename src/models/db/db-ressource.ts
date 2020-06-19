@@ -1,5 +1,4 @@
 import { Default, Column, DataType, Model, PrimaryKey, Table, AllowNull, HasMany } from 'sequelize-typescript';
-import { DbAccessToken } from './db-access-token';
 import { DbSetPasswordToken } from './db-set-password-token';
 
 // @dbEntity
