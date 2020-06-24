@@ -6,11 +6,14 @@ export class OAuthController extends ControllerBase {
     super();
   }
 
-  public static create(): Router {
+  public static create(redirectBaseRouteTo?: string): Router {
     const router = Router();
 
     // Welcome page
-    router.get('/', OAuthController.index);
+    // router.get('/', OAuthController.index);
+    if (redirectBaseRouteTo) {
+      router.get('/', (_req, res) => res.redirect(redirectBaseRouteTo));
+    }
     router.get('/.well-known/openid-configuration', OAuthController.getConfig);
     router.get('/oauth2/certs', OAuthController.getCertificates);
 
@@ -18,9 +21,9 @@ export class OAuthController extends ControllerBase {
   }
 
   // noinspection JSUnusedLocalSymbols, JSMethodCanBeStatic
-  public static index(req: Request, res: Response): void {
-    res.render('index', { title: 'Informaticon OAuth Server' });
-  }
+  // public static index(req: Request, res: Response): void {
+  //   res.render('index', { title: 'Informaticon OAuth Server' });
+  // }
 
   // noinspection JSUnusedLocalSymbols, JSMethodCanBeStatic
   public static getConfig(req: Request, res: Response): void {

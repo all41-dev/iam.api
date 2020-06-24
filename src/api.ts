@@ -12,10 +12,9 @@ export class IdentityApi extends Api<IdentityApi> {
   public setStaticInst(): void { IdentityApi.inst = this; }
 
   public init(): Router {
-
     this.router.use('/api/users', UsersController.create());
     this.router.use('/api/set-password-token', SetPasswordTokenController.create());
-    this.router.use('/', OAuthController.create());
+    this.router.use('/', OAuthController.create(this._options.config.redirectBaseRouteTo));
     this.router.use('/iam', OAuthController.create());
 
     return this.router;
