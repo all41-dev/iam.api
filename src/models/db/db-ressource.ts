@@ -1,4 +1,4 @@
-import { Default, Column, DataType, Model, PrimaryKey, Table, AllowNull, HasMany } from 'sequelize-typescript';
+import { Default, Column, DataType, Model, PrimaryKey, Table, AllowNull, HasMany, BelongsTo, ForeignKey } from 'sequelize-typescript';
 import { DbSetPasswordToken } from './db-set-password-token';
 
 // @dbEntity
@@ -45,6 +45,7 @@ export class DbRessource extends Model<DbRessource> {
   salt?: string;
 
   @AllowNull
+  @ForeignKey((): typeof Model => DbRessource)
   @Column(DataType.UUID)
   public parentUuid?: string;
 
@@ -60,6 +61,9 @@ export class DbRessource extends Model<DbRessource> {
 
   @HasMany((): typeof Model => DbSetPasswordToken)
   public setPasswordTokens?: DbSetPasswordToken[];
+
+  @BelongsTo((): typeof Model => DbRessource)
+  public parent?: DbRessource;
 
   // @HasMany((): typeof Model => DbAccessToken, 'IdUser')
   // public accessTokens?: DbAccessToken[];
