@@ -43,12 +43,12 @@ export class EntitySetPasswordToken extends Entity<DbSetPasswordToken, SetPasswo
 
   // noinspection JSMethodCanBeStatic
   public async clientToDb(clientObj: SetPasswordToken): Promise<DbSetPasswordToken> {
-    const obj = clientObj.id ?
-      (await DbSetPasswordToken.findOrBuild({ where: { Id: clientObj.id } }))[0] :
+    const obj = clientObj.uuid ?
+      (await DbSetPasswordToken.findOrBuild({ where: { Id: clientObj.uuid } }))[0] :
       new DbSetPasswordToken();
 
-    if (clientObj.id !== null) {
-      obj.uuid = clientObj.id;
+    if (clientObj.uuid !== null) {
+      obj.uuid = clientObj.uuid;
     }
     if (clientObj.idUser === undefined || clientObj.expires === undefined || clientObj.tokenHash === undefined) {
       throw new Error('invalid clientObj');

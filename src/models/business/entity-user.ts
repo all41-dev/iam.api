@@ -53,31 +53,24 @@ export class EntityUser extends Entity<DbRessource, User> {
   }
 
   public async dbToClient(dbInst: DbRessource): Promise<User> {
-    return new User(
-      dbInst.uuid,
-      dbInst.email,
-    );
+    return new User({
+      uuid: dbInst.uuid,
+      email: dbInst.email,
+      name: dbInst.name,
+      scopeUuids: dbInst.scopeUuids,
+    });
   }
 
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
-  public jsonToClient(obj: any): User {
-    const email: string = obj.email.toLowerCase();
-
-    return new User(
-      obj.id === undefined ? null : obj.id,
-      obj.email === undefined ? undefined : email,
-    );
-  }
-
-  // noinspection JSMethodCanBeStatic
   public async clientToDb(clientObj: User): Promise<DbRessource> {
-    const obj = clientObj.id ?
-      (await DbRessource.findOrBuild({ where: { Id: clientObj.id } }))[0]:
+    const obj = clientObj.uuid ?
+      (await DbRessource.findOrBuild({ where: { uuid: clientObj.uuid } }))[0]:
       new DbRessource();
 
     if (!clientObj.email) { throw new Error('email must be set'); }
     obj.email = clientObj.email;
     obj.path = `/root/users/${clientObj.email}`;
+    obj.scopeUuids = clientObj.scopeUuids;
+    obj.name = clientObj.name;
 
     // Set through the password update process
     // obj.Hash = "hashvalue";
