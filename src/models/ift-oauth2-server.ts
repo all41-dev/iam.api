@@ -319,7 +319,7 @@ export class HarpsOAuth2Server {
       if (!user) { throw new Error('User not found'); }
 
       const scopeUuids = user.scopeUuids ? user.scopeUuids.split(' ') : [];
-      const res = await DbScope.findAll({where: { uuid: {[Op.in]: scopeUuids}}}).then((scopes: DbScope[]) => scopes.map((scope) => scope.ressourcePaths).join(';'));
+      const res = await DbScope.findAll({where: { uuid: {[Op.in]: scopeUuids}}}).then((scopes: DbScope[]) => scopes.map((scope) => scope.ressourcePaths).join(' '));
       return res;
     })
   }
