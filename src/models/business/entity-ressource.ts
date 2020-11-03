@@ -11,7 +11,8 @@ export class EntityRessource extends Entity<DbRessource, Ressource> {
     const res = new Ressource({
       name: dbObj.name,
       uuid: dbObj.uuid,
-      path: dbObj.path,
+      nodeName: dbObj.path.substr(dbObj.path.lastIndexOf('/') + 1),
+      parentPath: dbObj.path.substr(0, dbObj.path.lastIndexOf('/') - 1),
       parentUuid: dbObj.parentUuid,
     });
     return res;
