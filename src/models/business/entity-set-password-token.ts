@@ -32,13 +32,13 @@ export class EntitySetPasswordToken extends Entity<DbSetPasswordToken, SetPasswo
 
   // noinspection JSMethodCanBeStatic
   public async dbToClient(inst: DbSetPasswordToken): Promise<SetPasswordToken> {
-    return new SetPasswordToken(
-      inst.uuid,
-      inst.IdUser,
-      inst.Message,
-      inst.Expires,
-      inst.TokenHash,
-    );
+    return new SetPasswordToken({
+      uuid: inst.uuid,
+      idUser: inst.IdUser,
+      message: inst.Message,
+      expires: inst.Expires,
+      tokenHash: inst.TokenHash,
+    });
   }
 
   // noinspection JSMethodCanBeStatic
