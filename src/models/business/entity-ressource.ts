@@ -1,6 +1,6 @@
 import { Ressource } from "@all41-dev/iam.model";
 import { Entity } from "@all41-dev/server";
-import { FindOptions, DestroyOptions, Op } from "sequelize/types";
+import { FindOptions, DestroyOptions, Op } from "sequelize";
 import { DbRessource } from "../db/db-ressource";
 
 export class EntityRessource extends Entity<DbRessource, Ressource> {
