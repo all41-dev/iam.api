@@ -18,6 +18,7 @@ export class RessourceController extends ControllerBase {
   public static getAll(req: Request, res: Response): void {
   // Since here, the user is considered as authorized
     const entity = new EntityRessource();
+    entity.setRessourceOnlyFilter();
 
     // if(req.query.filter && typeof req.query.filter === 'string')
     //   entity.setFilter(req.query.filter);

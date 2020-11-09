@@ -1,6 +1,6 @@
 import { Ressource } from "@all41-dev/iam.model";
 import { Entity } from "@all41-dev/server";
-import { FindOptions, DestroyOptions } from "sequelize/types";
+import { FindOptions, DestroyOptions, Op } from "sequelize/types";
 import { DbRessource } from "../db/db-ressource";
 
 export class EntityRessource extends Entity<DbRessource, Ressource> {
@@ -26,6 +26,14 @@ export class EntityRessource extends Entity<DbRessource, Ressource> {
     obj.path = clientObj.path;
     obj.parentUuid = clientObj.parentUuid;
     return obj;
+  }
+  setRessourceOnlyFilter(): void {
+    this._findOptions.where = {
+      path: {
+        [Op.notLike]: '/root/users/%',
+      }
+    }
+    this._findOptions.order = ['path'];
   }
   setFilter(opt: any): void {
     // nothing to do
