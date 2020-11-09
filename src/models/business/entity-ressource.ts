@@ -12,12 +12,14 @@ export class EntityRessource extends Entity<DbRessource, Ressource> {
       name: dbObj.name,
       uuid: dbObj.uuid,
       nodeName: dbObj.path.substr(dbObj.path.lastIndexOf('/') + 1),
-      parentPath: dbObj.path.substr(0, dbObj.path.lastIndexOf('/') - 1),
+      parentPath: dbObj.path.substr(0, dbObj.path.lastIndexOf('/')),
       parentUuid: dbObj.parentUuid,
     });
     return res;
   }
   async clientToDb(clientObj: Ressource): Promise<DbRessource> {
+    if (!(clientObj instanceof Ressource)) clientObj = new Ressource(clientObj);
+    
     const obj = clientObj.uuid ?
       (await DbRessource.findOrBuild({ where: { Id: clientObj.uuid } }))[0] :
       new DbRessource();
